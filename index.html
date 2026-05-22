@@ -59,10 +59,23 @@
             }
         }
         .hero-title-dash {
+            position: relative;
             display: inline-block;
             animation: hero-dash-in 1100ms cubic-bezier(0.16, 1, 0.3, 1) both;
             transform-origin: center;
             will-change: transform, opacity, filter;
+        }
+        .hero-title-dash::after {
+            content: "";
+            position: absolute;
+            left: 4%;
+            right: 4%;
+            bottom: -0.12em;
+            height: 0.08em;
+            min-height: 6px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, rgba(255, 0, 128, 0), rgba(255, 0, 128, 0.95), rgba(121, 40, 202, 0.9), rgba(255, 255, 255, 0));
+            box-shadow: 0 0 18px rgba(255, 0, 128, 0.45);
         }
         .hero-slide {
             opacity: 0;
