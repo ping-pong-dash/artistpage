@@ -262,14 +262,9 @@
                     <p class="text-pink-500 font-black text-sm tracking-widest">MEMBER ONLY</p>
                     <h2 class="text-4xl md:text-6xl font-black italic">ADMIN PANEL</h2>
                 </div>
-                <div class="flex items-center gap-3">
-                    <button onclick="viewReserveList()" class="rock-gradient px-5 py-3 rounded-full font-black text-xs md:text-sm hover:opacity-90 transition shadow-lg">
-                        取り置きリスト
-                    </button>
-                    <button onclick="closeAdminPanel()" class="glass w-12 h-12 rounded-full flex items-center justify-center hover:border-pink-500 transition" aria-label="Close admin panel">
-                        <i data-lucide="x" class="w-6 h-6"></i>
-                    </button>
-                </div>
+                <button onclick="closeAdminPanel()" class="glass w-12 h-12 rounded-full flex items-center justify-center hover:border-pink-500 transition" aria-label="Close admin panel">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
             </div>
             <div class="glass rounded-3xl p-2 mb-6 flex flex-wrap gap-2">
                 <button id="admin-tab-photos-button" onclick="switchAdminTab('photos')" class="admin-tab-button rock-gradient px-5 py-3 rounded-2xl font-black text-sm">写真</button>
@@ -319,7 +314,15 @@
                         <input id="admin-member-role" type="text" placeholder="Role" class="w-full bg-white/10 border border-white/20 p-3 rounded-xl">
                         <textarea id="admin-member-profile" placeholder="Profile" rows="5" class="w-full bg-white/10 border border-white/20 p-3 rounded-xl"></textarea>
                         <textarea id="admin-member-activities" placeholder="Other bands / works. 1行に1件ずつ" rows="4" class="w-full bg-white/10 border border-white/20 p-3 rounded-xl"></textarea>
-                        <input id="admin-member-photo" type="file" accept="image/*" class="w-full bg-white/10 border border-white/20 p-3 rounded-xl">
+                        <button type="button" onclick="document.getElementById('admin-member-photo').click()" class="group relative w-full overflow-hidden rounded-2xl border border-white/20 bg-zinc-900 aspect-[4/3] text-left">
+                            <img id="admin-member-photo-preview" src="" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="Member photo preview">
+                            <div class="absolute inset-0 bg-black/35 group-hover:bg-black/20 transition"></div>
+                            <div class="absolute bottom-4 left-4 right-4">
+                                <p class="text-xs font-black tracking-widest text-pink-400">PHOTO</p>
+                                <p class="font-bold">クリックして写真を変更</p>
+                            </div>
+                        </button>
+                        <input id="admin-member-photo" type="file" accept="image/*" class="hidden" onchange="previewAdminMemberPhoto(event)">
                         <button type="submit" class="w-full rock-gradient py-3 rounded-full font-black">保存</button>
                     </form>
                 </section>
@@ -1110,6 +1113,15 @@
             document.getElementById('admin-member-role').value = member.role;
             document.getElementById('admin-member-profile').value = member.profile;
             document.getElementById('admin-member-activities').value = member.activities.map(item => `${item.band}: ${item.detail}`).join('\n');
+            document.getElementById('admin-member-photo-preview').src = member.image;
+            document.getElementById('admin-member-photo-preview').style.objectPosition = member.imagePosition || (memberId === 'rei' ? 'right center' : 'center center');
+        }
+
+        async function previewAdminMemberPhoto(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            document.getElementById('admin-member-photo-preview').src = await readImageFile(file);
         }
 
         async function saveAdminProfile(event) {
