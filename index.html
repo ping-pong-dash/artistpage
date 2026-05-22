@@ -100,8 +100,8 @@
 
     <section class="relative h-screen flex items-center justify-center overflow-hidden">
         <div class="absolute inset-0 z-0">
-            <img id="hero-slide-a" src="assets/photos/live/20250927-ppd-jmatsuri/nami.jpg" class="hero-slide is-active absolute inset-0 w-full h-full object-cover grayscale hover:grayscale-0" alt="Hero Background">
-            <img id="hero-slide-b" src="assets/photos/live/20250927-ppd-jmatsuri/meri.jpg" class="hero-slide absolute inset-0 w-full h-full object-cover grayscale hover:grayscale-0" alt="Hero Background">
+            <img id="hero-slide-a" src="assets/photos/hero/LINE_ALBUM_20250927 PPD J祭_260522_1.jpg" class="hero-slide is-active absolute inset-0 w-full h-full object-cover grayscale hover:grayscale-0" alt="Hero Background">
+            <img id="hero-slide-b" src="" class="hero-slide absolute inset-0 w-full h-full object-cover grayscale hover:grayscale-0" alt="Hero Background">
             <div class="absolute inset-0 bg-black bg-opacity-60"></div>
         </div>
         <div class="relative z-10 text-center px-4">
@@ -386,16 +386,13 @@
         }
 
         const heroPhotos = [
-            { src: 'assets/photos/live/20250927-ppd-jmatsuri/nami.jpg', alt: 'PPD J祭 NAMi' },
-            { src: 'assets/photos/live/20250927-ppd-jmatsuri/meri.jpg', alt: 'PPD J祭 MERi' },
-            { src: 'assets/photos/live/20250927-ppd-jmatsuri/miki.jpg', alt: 'PPD J祭 MiKi' },
-            { src: 'assets/photos/live/20250927-ppd-jmatsuri/rei.jpg', alt: 'PPD J祭 REi' }
+            { src: 'assets/photos/hero/LINE_ALBUM_20250927 PPD J祭_260522_1.jpg', alt: 'Ping-Pong-Dash hero photo' }
         ];
         let heroPhotoIndex = 0;
         let heroSlideshowTimer = null;
 
         function initHeroSlideshow() {
-            if (heroSlideshowTimer || heroPhotos.length < 2) return;
+            if (heroSlideshowTimer || heroPhotos.length === 0) return;
 
             const slides = [
                 document.getElementById('hero-slide-a'),
@@ -406,6 +403,14 @@
 
             slides[0].src = heroPhotos[0].src;
             slides[0].alt = heroPhotos[0].alt;
+            slides[0].classList.add('is-active');
+
+            if (heroPhotos.length < 2) {
+                slides[1].removeAttribute('src');
+                slides[1].classList.remove('is-active');
+                return;
+            }
+
             slides[1].src = heroPhotos[1].src;
             slides[1].alt = heroPhotos[1].alt;
 
