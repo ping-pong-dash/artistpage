@@ -281,7 +281,6 @@
                 <button id="admin-tab-photos-button" onclick="switchAdminTab('photos')" class="admin-tab-button rock-gradient px-5 py-3 rounded-2xl font-black text-sm">写真</button>
                 <button id="admin-tab-live-button" onclick="switchAdminTab('live')" class="admin-tab-button px-5 py-3 rounded-2xl font-black text-sm hover:bg-white/10 transition">Live</button>
                 <button id="admin-tab-members-button" onclick="switchAdminTab('members')" class="admin-tab-button px-5 py-3 rounded-2xl font-black text-sm hover:bg-white/10 transition">Member</button>
-                <button id="admin-tab-reserve-button" onclick="switchAdminTab('reserve')" class="admin-tab-button px-5 py-3 rounded-2xl font-black text-sm hover:bg-white/10 transition">取り置き</button>
             </div>
             <div id="admin-tab-panels" class="space-y-6">
                 <section class="glass rounded-3xl p-6">
@@ -392,32 +391,12 @@
                             <p id="live-detail-charge" class="font-bold"></p>
                         </div>
                     </div>
-                    <p id="live-detail-info" class="opacity-80 leading-relaxed mb-8"></p>
-                    <button id="live-detail-reserve" class="rock-gradient w-full py-4 rounded-full font-black text-lg hover:brightness-110 transition">取り置きリストに入れる</button>
+                    <p id="live-detail-info" class="opacity-80 leading-relaxed"></p>
                 </div>
                 <button id="live-detail-flyer-wrap" onclick="event.stopPropagation(); viewPhoto(document.getElementById('live-detail-flyer').src)" class="hidden group overflow-hidden rounded-2xl bg-zinc-900 border border-white/10 aspect-[3/4]">
                     <img id="live-detail-flyer" src="" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="Live flyer">
                 </button>
             </div>
-        </div>
-    </div>
-
-    <div id="ticket-modal" class="fixed inset-0 z-[130] hidden flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black bg-opacity-90 backdrop-blur-md" onclick="toggleModal('ticket-modal')"></div>
-        <div class="relative glass max-w-md w-full p-8 rounded-3xl shadow-2xl border-pink-500 border">
-            <h2 class="text-3xl font-black mb-4 italic">取り置きリスト</h2>
-            <div id="reserve-list" class="space-y-3 mb-6"></div>
-            <form id="reserve-form" class="space-y-4" onsubmit="submitReserve(event)">
-                <div>
-                    <label class="text-xs uppercase font-bold opacity-60">Full Name</label>
-                    <input type="text" placeholder="Your Name" required class="w-full bg-white/10 border border-white/20 p-3 rounded-xl mt-1 focus:border-pink-500 outline-none transition">
-                </div>
-                <div>
-                    <label class="text-xs uppercase font-bold opacity-60">Email Address</label>
-                    <input type="email" placeholder="email@example.com" required class="w-full bg-white/10 border border-white/20 p-3 rounded-xl mt-1 focus:border-pink-500 outline-none transition">
-                </div>
-                <button type="submit" class="w-full rock-gradient py-4 rounded-full font-black text-xl mt-4 shadow-lg hover:brightness-110 transition">取り置きを送信</button>
-            </form>
         </div>
     </div>
 
@@ -638,7 +617,7 @@
                 venue: 'Shibuya CLUB QUATTRO',
                 time: 'OPEN 18:00 / START 18:30',
                 charge: '前売 ¥3,000 / 当日 ¥3,500 + 1D',
-                info: 'ping-pong-dashが渋谷で鳴らす初夏の爆音ナイト。取り置き希望の方はリストに追加して、お名前とメールアドレスを送信してください。'
+                info: 'ping-pong-dashが渋谷で鳴らす初夏の爆音ナイト。最新情報は公式SNSでお知らせします。'
             },
             osaka: {
                 title: 'OSAKA NIGHT DASH',
@@ -647,11 +626,9 @@
                 venue: 'Osaka BIGCAT',
                 time: 'OPEN 18:30 / START 19:00',
                 charge: '前売 ¥3,200 / 当日 ¥3,700 + 1D',
-                info: '大阪BIGCATでのスペシャルライブ。入場枠が少なくなっているため、来場予定の方は早めに取り置きリストへ追加してください。'
+                info: '大阪BIGCATでのスペシャルライブ。詳細は公式SNSで随時お知らせします。'
             }
         };
-
-        let reserveList = [];
 
         function saveAdminData() {
             localStorage.setItem('ppdMemberData', JSON.stringify(memberData));
@@ -690,14 +667,10 @@
                 .filter(([, live]) => live.visible !== false)
                 .sort((a, b) => new Date(a[1].dateValue) - new Date(b[1].dateValue));
             list.innerHTML = sortedLives.map(([liveId, live]) => {
-                const past = isPastLive(live);
                 const date = new Date(`${live.dateValue}T00:00:00`);
                 const monthDay = `${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
                 const day = live.date.split(' ').pop();
                 const flyer = live.flyer || '';
-                const action = past
-                    ? '<span class="text-xs px-3 py-1 border border-pink-500 text-pink-500 rounded-full">THANK YOU</span><button onclick="event.stopPropagation()" class="bg-zinc-700 text-zinc-300 px-8 py-3 rounded-full font-bold w-full md:w-auto cursor-not-allowed" disabled>THANK YOU</button>'
-                    : `<span class="text-xs px-3 py-1 border border-green-500 text-green-500 rounded-full">取り置き受付中</span><button onclick="event.stopPropagation(); addToReserve('${liveId}')" class="rock-gradient px-8 py-3 rounded-full font-bold w-full md:w-auto">リストに入れる</button>`;
                 return `
                     <div onclick="openLiveDetail('${liveId}')" class="glass p-6 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-6 hover:border-pink-500 transition group cursor-pointer">
                         <div class="flex items-center gap-8 w-full md:w-auto">
@@ -712,7 +685,9 @@
                                 <p class="text-xs text-pink-500 font-bold mt-2 opacity-0 group-hover:opacity-100 transition">クリックで詳細を見る</p>
                             </div>
                         </div>
-                        <div class="flex items-center gap-4 w-full md:w-auto justify-end">${action}</div>
+                        <div class="flex items-center gap-4 w-full md:w-auto justify-end">
+                            <span class="border border-pink-500 text-pink-500 px-8 py-3 rounded-full font-bold w-full md:w-auto text-center">DETAIL</span>
+                        </div>
                     </div>
                 `;
             }).join('');
@@ -738,17 +713,9 @@
             }).join('');
         }
 
-        function isPastLive(live) {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const liveDate = new Date(`${live.dateValue}T00:00:00`);
-            return liveDate < today;
-        }
-
         function openLiveDetail(liveId) {
             const live = liveData[liveId];
             if (!live || live.visible === false) return;
-            const reserveButton = document.getElementById('live-detail-reserve');
             document.getElementById('live-detail-date').innerText = live.date;
             document.getElementById('live-detail-title').innerText = live.title;
             document.getElementById('live-detail-venue').innerText = live.venue;
@@ -765,18 +732,6 @@
                 flyerWrap.classList.add('hidden');
             }
 
-            if (isPastLive(live)) {
-                reserveButton.innerText = 'THANK YOU';
-                reserveButton.disabled = true;
-                reserveButton.onclick = null;
-                reserveButton.className = 'bg-zinc-700 text-zinc-300 w-full py-4 rounded-full font-black text-lg cursor-not-allowed';
-            } else {
-                reserveButton.innerText = '取り置きリストに入れる';
-                reserveButton.disabled = false;
-                reserveButton.onclick = () => addToReserve(liveId);
-                reserveButton.className = 'rock-gradient w-full py-4 rounded-full font-black text-lg hover:brightness-110 transition';
-            }
-
             document.getElementById('live-detail-modal').classList.remove('hidden');
             document.body.style.overflow = 'hidden';
         }
@@ -784,69 +739,6 @@
         function closeLiveDetail() {
             document.getElementById('live-detail-modal').classList.add('hidden');
             document.body.style.overflow = 'auto';
-        }
-
-        function addToReserve(liveId) {
-            const live = liveData[liveId];
-            if (isPastLive(live)) {
-                alert('終了したライブは取り置きできません。THANK YOU!');
-                return;
-            }
-
-            if (!reserveList.includes(liveId)) {
-                reserveList.push(liveId);
-            }
-
-            const feedback = document.createElement('div');
-            feedback.className = 'fixed top-24 left-1/2 -translate-x-1/2 bg-pink-600 text-white px-6 py-2 rounded-full font-bold z-[120] animate-bounce';
-            feedback.innerText = `${live.title} を取り置きリストに追加しました`;
-            document.body.appendChild(feedback);
-            setTimeout(() => feedback.remove(), 2000);
-        }
-
-        function viewReserveList() {
-            renderReserveList();
-            document.getElementById('ticket-modal').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function renderReserveList() {
-            const list = document.getElementById('reserve-list');
-            const form = document.getElementById('reserve-form');
-
-            if (reserveList.length === 0) {
-                list.innerHTML = '<p class="bg-white/5 rounded-2xl p-4 text-sm opacity-70">まだ取り置きリストにライブがありません。LIVE INFOから追加してください。</p>';
-                form.classList.add('hidden');
-                return;
-            }
-
-            form.classList.remove('hidden');
-            list.innerHTML = reserveList.map(liveId => {
-                const live = liveData[liveId];
-                return `
-                    <div class="bg-white/5 rounded-2xl p-4 flex justify-between gap-4">
-                        <div>
-                            <p class="font-bold">${live.title}</p>
-                            <p class="text-xs opacity-60">${live.date} / ${live.venue}</p>
-                        </div>
-                        <button onclick="removeFromReserve('${liveId}')" class="text-xs text-pink-500 font-bold">削除</button>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function removeFromReserve(liveId) {
-            reserveList = reserveList.filter(id => id !== liveId);
-            renderReserveList();
-        }
-
-        function submitReserve(event) {
-            event.preventDefault();
-            const shows = reserveList.map(liveId => liveData[liveId].title).join(' / ');
-            alert(`${shows} の取り置きを受け付けました。確認メールをご確認ください。`);
-            reserveList = [];
-            renderReserveList();
-            toggleModal('ticket-modal');
         }
 
         let albums = {
@@ -941,19 +833,6 @@
             if (document.getElementById('admin-member-activities')) {
                 document.getElementById('admin-member-activities').placeholder = 'Other bands / works. 1行に1件';
             }
-            document.querySelectorAll('button[onclick="viewReserveList()"]').forEach(button => {
-                button.innerText = '取り置きリスト';
-            });
-            if (panels && !document.getElementById('admin-tab-reserve')) {
-                panels.insertAdjacentHTML('beforeend', `
-                    <section id="admin-tab-reserve" class="glass rounded-3xl p-6 hidden">
-                        <h3 class="text-2xl font-black mb-4">取り置き</h3>
-                        <p class="text-sm opacity-70 mb-5">このブラウザで追加された取り置きリストを確認します。</p>
-                        <button onclick="viewReserveList()" class="rock-gradient px-6 py-3 rounded-full font-black hover:opacity-90 transition shadow-lg">取り置きリストを開く</button>
-                    </section>
-                `);
-            }
-
             document.querySelectorAll('#admin-tab-panels > section').forEach(section => {
                 section.classList.add('admin-tab-panel');
             });
@@ -1181,7 +1060,6 @@
 
             delete liveData[liveId];
             delete albums[liveId];
-            reserveList = reserveList.filter(id => id !== liveId);
             saveAdminData();
             refreshSite();
             resetAdminLiveForm();
