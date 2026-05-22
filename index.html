@@ -1349,8 +1349,8 @@
             } else {
                 grid.innerHTML = album.photos.map((photo, index) => {
                     const portrait = photo.orientation === 'portrait';
-                    const spanClass = portrait ? 'sm:row-span-2' : (index % 5 === 0 ? 'sm:col-span-2' : '');
-                    const frameClass = portrait ? 'h-[28rem]' : (index % 5 === 0 ? 'h-80' : 'h-64');
+                    const spanClass = portrait ? 'sm:row-span-2' : '';
+                    const frameClass = portrait ? 'h-[28rem]' : 'h-64';
 
                     return `
                 <button class="group relative ${frameClass} ${spanClass} overflow-hidden rounded-2xl bg-zinc-900" onclick="viewPhoto('${photo.src}', '${albumId}', ${index})">
