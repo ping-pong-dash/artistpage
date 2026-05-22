@@ -77,37 +77,6 @@
             background: linear-gradient(90deg, rgba(255, 0, 128, 0), rgba(255, 0, 128, 0.95), rgba(121, 40, 202, 0.9), rgba(255, 255, 255, 0));
             box-shadow: 0 0 18px rgba(255, 0, 128, 0.45);
         }
-        @keyframes hero-logo-pop {
-            0% {
-                transform: rotate(-14deg) scale(1);
-            }
-            24% {
-                transform: rotate(-4deg) scale(1.18) translate3d(10px, -12px, 0);
-            }
-            48% {
-                transform: rotate(-22deg) scale(0.96) translate3d(-8px, 8px, 0);
-            }
-            72% {
-                transform: rotate(-9deg) scale(1.06) translate3d(4px, -5px, 0);
-            }
-            100% {
-                transform: rotate(-14deg) scale(1);
-            }
-        }
-        .hero-logo-burst {
-            cursor: pointer;
-            transform: rotate(-14deg);
-            transform-origin: center;
-            transition: filter 200ms ease, transform 200ms ease;
-            will-change: transform;
-        }
-        .hero-logo-burst:hover {
-            filter: brightness(1.12);
-            transform: rotate(-14deg) scale(1.04);
-        }
-        .hero-logo-burst.is-popping {
-            animation: hero-logo-pop 850ms cubic-bezier(0.16, 1, 0.3, 1) both;
-        }
         .hero-slide {
             opacity: 0;
             transition: opacity 1200ms ease, filter 700ms ease, transform 7000ms ease;
@@ -145,8 +114,7 @@
             <img id="hero-slide-b" src="" class="hero-slide absolute inset-0 w-full h-full object-cover grayscale hover:grayscale-0" alt="Hero Background">
             <div class="absolute inset-0 bg-black bg-opacity-60"></div>
         </div>
-        <div class="relative z-10 text-center px-4 pt-20 md:pt-24">
-            <img id="hero-logo" src="assets/logos/band-logo.jpg" class="hero-logo-burst absolute -top-8 left-4 md:-top-6 md:left-10 w-24 h-24 md:w-36 md:h-36 rounded-full object-cover border-4 border-pink-500 shadow-2xl shadow-pink-500/30" alt="ping-pong-dash logo" onclick="popHeroLogo()">
+        <div class="relative z-10 text-center px-4">
             <h1 class="text-6xl md:text-9xl font-black italic tracking-tighter mb-4">
                 <span class="hero-title-dash text-transparent bg-clip-text rock-gradient">Ping-Pong-Dash.</span>
             </h1>
@@ -472,15 +440,6 @@
                 slides[activeSlide].classList.remove('is-active');
                 activeSlide = nextSlide;
             }, 4500);
-        }
-
-        function popHeroLogo() {
-            const logo = document.getElementById('hero-logo');
-            if (!logo) return;
-
-            logo.classList.remove('is-popping');
-            void logo.offsetWidth;
-            logo.classList.add('is-popping');
         }
 
         let memberData = {
