@@ -339,7 +339,8 @@
                         <label class="block text-xs uppercase font-bold opacity-60">プロフィール</label>
                         <textarea id="admin-member-profile" placeholder="Profile" rows="5" class="w-full bg-white/10 border border-white/20 p-3 rounded-xl"></textarea>
                         <label class="block text-xs uppercase font-bold opacity-60">アナザーバンド</label>
-                        <textarea id="admin-member-activities" oninput="renderAdminActivityImageControls()" placeholder="Other bands / works. 1行に1件ずつ" rows="4" class="w-full bg-white/10 border border-white/20 p-3 rounded-xl"></textarea>
+                        <div id="admin-activity-image-list" class="space-y-3"></div>
+                        <button type="button" onclick="addAdminActivityEditor()" class="w-full border border-white/20 py-3 rounded-full font-black hover:border-pink-500 transition">アナザーバンドを追加</button>
                         <label class="block text-xs uppercase font-bold opacity-60">メンバー写真</label>
                         <button type="button" onclick="document.getElementById('admin-member-photo').click()" class="group relative w-full overflow-hidden rounded-2xl border border-white/20 bg-zinc-900 aspect-[4/3] text-left">
                             <img id="admin-member-photo-preview" src="" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="Member photo preview">
@@ -350,11 +351,7 @@
                             </div>
                         </button>
                         <input id="admin-member-photo" type="file" accept="image/*" class="hidden" onchange="previewAdminMemberPhoto(event)">
-                        <div class="border-t border-white/10 pt-4 space-y-3">
-                            <label class="text-xs uppercase font-bold opacity-60">アナザーバンド画像</label>
-                            <div id="admin-activity-image-list" class="space-y-3"></div>
-                            <input id="admin-activity-image-file" type="file" accept="image/*" class="hidden" onchange="previewAdminActivityImage(event)">
-                        </div>
+                        <input id="admin-activity-image-file" type="file" accept="image/*" class="hidden" onchange="previewAdminActivityImage(event)">
                         <button type="submit" class="w-full rock-gradient py-3 rounded-full font-black">保存</button>
                     </form>
                 </section>
@@ -1268,7 +1265,6 @@
             const member = memberData[memberId];
             document.getElementById('admin-member-role').value = member.role;
             document.getElementById('admin-member-profile').value = member.profile;
-            document.getElementById('admin-member-activities').value = member.activities.map(item => `${item.band}: ${item.detail}`).join('\n');
             document.getElementById('admin-member-photo-preview').src = member.image;
             document.getElementById('admin-member-photo-preview').style.objectPosition = member.imagePosition || (memberId === 'rei' ? 'right center' : 'center center');
             renderAdminActivityImageControls(member);
@@ -1277,61 +1273,101 @@
         let adminActivityImageTargetIndex = 0;
 
         function parseAdminActivities() {
-            return document.getElementById('admin-member-activities').value.split('\n').filter(Boolean).map(line => {
-                const [band, ...detail] = line.split(':');
-                return { band: band.trim(), detail: detail.join(':').trim() || '活動内容を編集中です。' };
-            });
+            return Array.from(document.querySelectorAll('.admin-activity-editor')).map((editor, index) => {
+                const band = editor.querySelector('.admin-activity-band')?.value.trim() || '';
+                const detail = editor.querySelector('.admin-activity-detail')?.value.trim() || '';
+                const image = editor.querySelector('.admin-activity-image-preview')?.getAttribute('src') || '';
+
+                if (!band && !detail && !image) return null;
+                return {
+                    band: band || `Another band ${index + 1}`,
+                    detail: detail || '活動内容を編集中です。',
+                    image
+                };
+            }).filter(Boolean);
         }
 
-        function getCurrentAdminMember() {
-            const memberId = document.getElementById('admin-member-select')?.value;
-            return memberId ? memberData[memberId] : null;
-        }
-
-        function getAdminActivityImage(index, activity, member) {
-            const currentPreview = document.getElementById(`admin-activity-image-preview-${index}`)?.getAttribute('src');
-            if (currentPreview) return currentPreview;
-
-            const existingByBand = new Map((member?.activities || []).map(item => [item.band, item.image]));
-            return existingByBand.get(activity.band) || member?.activities?.[index]?.image || '';
-        }
-
-        function renderAdminActivityImageControls(member = getCurrentAdminMember()) {
+        function addAdminActivityEditor(activity = {}) {
             const list = document.getElementById('admin-activity-image-list');
             if (!list) return;
 
-            const activities = parseAdminActivities();
-            if (activities.length === 0) {
-                list.innerHTML = '<p class="bg-white/5 rounded-2xl p-4 text-sm opacity-70">Another bandに入力すると、ここに画像登録欄が出ます。</p>';
-                return;
-            }
+            const index = list.querySelectorAll('.admin-activity-editor').length;
+            list.insertAdjacentHTML('beforeend', getAdminActivityEditorHtml(activity, index));
+            lucide.createIcons();
+        }
 
-            list.innerHTML = activities.map((activity, index) => {
-                const image = getAdminActivityImage(index, activity, member);
-                return `
-                    <div class="grid grid-cols-[7rem_1fr] gap-3 items-center bg-white/5 rounded-2xl p-3 border border-white/10">
+        function escapeAdminField(value = '') {
+            return String(value).replace(/[&<>"']/g, char => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            }[char]));
+        }
+
+        function getAdminActivityEditorHtml(activity, index) {
+            const band = escapeAdminField(activity.band || '');
+            const detail = escapeAdminField(activity.detail || '');
+            const image = escapeAdminField(activity.image || '');
+
+            return `
+                <div class="admin-activity-editor bg-white/5 rounded-2xl p-3 border border-white/10 space-y-3" data-activity-index="${index}">
+                    <div class="grid grid-cols-[7rem_1fr] gap-3 items-start">
                         <button type="button" onclick="selectAdminActivityImage(${index})" class="group relative overflow-hidden rounded-xl bg-zinc-900 aspect-square border border-white/10">
-                            <img id="admin-activity-image-preview-${index}" src="${image}" class="w-full h-full object-cover opacity-80 group-hover:scale-105 transition duration-500" alt="${activity.band} image">
+                            <img id="admin-activity-image-preview-${index}" src="${image}" class="admin-activity-image-preview w-full h-full object-cover opacity-80 group-hover:scale-105 transition duration-500" alt="${band || 'Another band'} image">
                             <div class="absolute inset-0 bg-black/35 group-hover:bg-black/20 transition"></div>
                             <i data-lucide="image-plus" class="absolute left-1/2 top-1/2 w-6 h-6 -translate-x-1/2 -translate-y-1/2"></i>
                         </button>
                         <div class="min-w-0 space-y-2">
-                            <p class="font-black truncate">${activity.band || `Another band ${index + 1}`}</p>
-                            <p class="text-xs opacity-60 line-clamp-2">${activity.detail}</p>
-                            <div class="flex flex-wrap gap-2">
-                                <button type="button" onclick="selectAdminActivityImage(${index})" class="border border-white/20 px-3 py-2 rounded-full text-xs font-bold hover:border-pink-500 transition">画像を変更</button>
-                                <button type="button" onclick="clearAdminActivityImage(${index})" class="border border-red-500/50 text-red-300 px-3 py-2 rounded-full text-xs font-bold hover:bg-red-500/10 transition">削除</button>
-                            </div>
+                            <label class="block text-xs uppercase font-bold opacity-60">バンド名</label>
+                            <input type="text" class="admin-activity-band w-full bg-white/10 border border-white/20 p-3 rounded-xl" placeholder="Band name" value="${band}">
                         </div>
                     </div>
-                `;
-            }).join('');
+                    <label class="block text-xs uppercase font-bold opacity-60">説明</label>
+                    <textarea class="admin-activity-detail w-full bg-white/10 border border-white/20 p-3 rounded-xl" rows="3" placeholder="Activity detail">${detail}</textarea>
+                    <div class="flex flex-wrap gap-2">
+                        <button type="button" onclick="selectAdminActivityImage(${index})" class="border border-white/20 px-3 py-2 rounded-full text-xs font-bold hover:border-pink-500 transition">画像を変更</button>
+                        <button type="button" onclick="clearAdminActivityImage(${index})" class="border border-white/20 px-3 py-2 rounded-full text-xs font-bold hover:border-pink-500 transition">画像を削除</button>
+                        <button type="button" onclick="removeAdminActivityEditor(${index})" class="border border-red-500/50 text-red-300 px-3 py-2 rounded-full text-xs font-bold hover:bg-red-500/10 transition">セットを削除</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderAdminActivityImageControls(member) {
+            const list = document.getElementById('admin-activity-image-list');
+            if (!list) return;
+
+            const activities = member?.activities || [];
+            if (activities.length === 0) {
+                list.innerHTML = '';
+                addAdminActivityEditor();
+                return;
+            }
+
+            list.innerHTML = activities.map((activity, index) => getAdminActivityEditorHtml(activity, index)).join('');
             lucide.createIcons();
+        }
+
+        function refreshAdminActivityEditorIndexes() {
+            document.querySelectorAll('.admin-activity-editor').forEach((editor, index) => {
+                editor.dataset.activityIndex = index;
+                editor.querySelector('.admin-activity-image-preview').id = `admin-activity-image-preview-${index}`;
+                editor.querySelectorAll('button').forEach(button => {
+                    button.setAttribute('onclick', button.getAttribute('onclick').replace(/\(\d+\)/, `(${index})`));
+                });
+            });
         }
 
         function selectAdminActivityImage(index) {
             adminActivityImageTargetIndex = index;
             document.getElementById('admin-activity-image-file').click();
+        }
+
+        function removeAdminActivityEditor(index) {
+            document.querySelector(`[data-activity-index="${index}"]`)?.remove();
+            refreshAdminActivityEditorIndexes();
         }
 
         async function previewAdminMemberPhoto(event) {
