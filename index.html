@@ -947,10 +947,14 @@
                 return;
             }
 
-            list.innerHTML = album.photos.map((photo, index) => `
-                <div class="bg-white/5 rounded-2xl overflow-hidden border border-white/10">
-                    <button type="button" onclick="viewPhoto('${photo.src}', '${albumId}', ${index})" class="block w-full h-56 overflow-hidden bg-zinc-900">
-                        <img src="${photo.src}" class="w-full h-full object-contain hover:scale-105 transition duration-500" alt="${photo.alt || album.title}">
+            list.innerHTML = album.photos.map((photo, index) => {
+                const portrait = photo.orientation === 'portrait';
+                const frameClass = portrait ? 'h-80 md:h-[420px]' : 'h-56';
+
+                return `
+                <div class="bg-white/5 rounded-2xl overflow-hidden border border-white/10 ${portrait ? 'md:row-span-2' : ''}">
+                    <button type="button" onclick="viewPhoto('${photo.src}', '${albumId}', ${index})" class="block w-full ${frameClass} overflow-hidden bg-zinc-900">
+                        <img src="${photo.src}" class="w-full h-full object-cover hover:scale-105 transition duration-500" alt="${photo.alt || album.title}" onload="markPhotoOrientation(this, '${albumId}', ${index})">
                     </button>
                     <div class="p-4 space-y-3">
                         <label class="text-xs uppercase font-bold opacity-60">Comment</label>
@@ -961,7 +965,8 @@
                         </div>
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
         }
 
         function saveAdminPhotoComment(albumId, index) {
@@ -985,6 +990,17 @@
             saveAdminData();
             renderAlbumCards();
             renderAdminPhotoList();
+        }
+
+        function markPhotoOrientation(img, albumId, index) {
+            const photo = albums[albumId]?.photos[index];
+            if (!photo) return;
+
+            const orientation = img.naturalHeight > img.naturalWidth ? 'portrait' : 'landscape';
+            if (photo.orientation === orientation) return;
+
+            photo.orientation = orientation;
+            saveAdminData();
         }
 
         function getSortedLiveEntries() {
@@ -1168,13 +1184,23 @@
             });
         }
 
+        function getImageOrientation(src) {
+            return new Promise(resolve => {
+                const img = new Image();
+                img.onload = () => resolve(img.height > img.width ? 'portrait' : 'landscape');
+                img.onerror = () => resolve('landscape');
+                img.src = src;
+            });
+        }
+
         async function uploadAdminPhoto(event) {
             event.preventDefault();
             const albumId = document.getElementById('admin-photo-album').value;
             const file = document.getElementById('admin-photo-file').files[0];
             const comment = document.getElementById('admin-photo-caption').value.trim();
             const src = await resizeImageFile(file);
-            const photo = { src, alt: comment || albums[albumId].title, comment };
+            const orientation = await getImageOrientation(src);
+            const photo = { src, alt: comment || albums[albumId].title, comment, orientation };
             albums[albumId].photos.push(photo);
 
             try {
@@ -1263,14 +1289,20 @@
             if (album.photos.length === 0) {
                 grid.innerHTML = '<div class="glass rounded-3xl p-8 text-center opacity-70 lg:col-span-4">まだ写真がありません。LIVE外の写真は assets/photos/offshot/ にまとめて追加できます。</div>';
             } else {
-                grid.innerHTML = album.photos.map((photo, index) => `
-                <button class="group relative h-72 overflow-hidden rounded-2xl bg-zinc-900" onclick="viewPhoto('${photo.src}', '${albumId}', ${index})">
-                    <img src="${photo.src}" class="w-full h-full object-contain group-hover:scale-105 transition duration-500" alt="${photo.alt}">
+                grid.innerHTML = album.photos.map((photo, index) => {
+                    const portrait = photo.orientation === 'portrait';
+                    const spanClass = portrait ? 'sm:row-span-2' : (index % 5 === 0 ? 'sm:col-span-2' : '');
+                    const frameClass = portrait ? 'h-[28rem]' : (index % 5 === 0 ? 'h-80' : 'h-64');
+
+                    return `
+                <button class="group relative ${frameClass} ${spanClass} overflow-hidden rounded-2xl bg-zinc-900" onclick="viewPhoto('${photo.src}', '${albumId}', ${index})">
+                    <img src="${photo.src}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="${photo.alt}" onload="markPhotoOrientation(this, '${albumId}', ${index})">
                     <div class="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition"></div>
                     ${(photo.comment || photo.alt) ? `<p class="absolute left-4 bottom-4 right-12 text-sm font-bold drop-shadow-lg">${photo.comment || photo.alt}</p>` : ''}
                     <i data-lucide="maximize-2" class="absolute bottom-4 right-4 w-6 h-6 opacity-0 group-hover:opacity-100 transition"></i>
                 </button>
-                `).join('');
+                `;
+                }).join('');
             }
 
             modal.classList.remove('hidden');
