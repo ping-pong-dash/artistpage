@@ -240,7 +240,7 @@
             </button>
             <div class="grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-8 items-start">
                 <div class="relative overflow-hidden rounded-3xl aspect-[3/4]">
-                    <img id="member-detail-image" src="" class="w-full h-full object-cover" alt="">
+                    <img id="member-detail-image" src="" class="w-full h-full object-cover border-4" alt="">
                     <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-70"></div>
                     <div class="absolute bottom-6 left-6 right-6">
                         <p id="member-detail-role" class="text-pink-500 font-bold text-sm tracking-widest uppercase mb-2"></p>
@@ -472,6 +472,8 @@
                 name: 'NAMi',
                 role: 'Guitar & Vocals',
                 image: 'assets/members/nami.jpg',
+                color: '#ff4fa3',
+                colorSoft: 'rgba(255, 79, 163, 0.28)',
                 profile: 'ping-pong-dashのギターボーカル。鋭いギターリフとまっすぐ抜ける歌声で、バンドの衝動とメロディを前へ押し出す。ライブではフロアとの距離感を大事にしながら、楽曲の熱量を一気に上げる存在。',
                 activities: [
                     { band: 'ソロ / 弾き語り', detail: 'アコースティック編成でのライブやデモ制作を中心に活動。ping-pong-dashとは違う言葉の温度感を出している。' },
@@ -483,6 +485,8 @@
                 name: 'MERi',
                 role: 'Guitar & Vocals',
                 image: 'assets/members/meri.jpg',
+                color: '#ffd447',
+                colorSoft: 'rgba(255, 212, 71, 0.26)',
                 profile: 'ツインボーカルの片翼を担うギターボーカル。コードワークとコーラスで楽曲に奥行きを作り、時に前に出るメロディでバンドの景色を切り替える。',
                 activities: [
                     { band: 'インディーポップユニット', detail: '別名義で柔らかいギターポップの楽曲制作に参加。コーラスアレンジも担当。' },
@@ -494,6 +498,8 @@
                 name: 'MiKi',
                 role: 'Bass & Vocals',
                 image: 'assets/members/miki.jpg',
+                color: '#a855f7',
+                colorSoft: 'rgba(168, 85, 247, 0.3)',
                 imageScale: 1.22,
                 profile: 'ベースボーカルとして低音と声の両方でバンドの中心を支える。跳ねるベースラインと芯のある歌で、ping-pong-dashのダンス感とロック感をつなぐ。',
                 activities: [
@@ -506,6 +512,8 @@
                 name: 'REi',
                 role: 'Drums',
                 image: 'assets/members/rei.jpg',
+                color: '#38bdf8',
+                colorSoft: 'rgba(56, 189, 248, 0.28)',
                 imagePosition: 'right center',
                 profile: 'ドラム担当。スピード感のあるビートとメリハリの強いフィルで、ライブ全体を駆動する。楽曲の展開に合わせたダイナミクスでバンドの爆発力を引き出す。',
                 activities: [
@@ -516,8 +524,38 @@
             }
         };
 
+        const memberColorDefaults = {
+            nami: { color: '#ff4fa3', colorSoft: 'rgba(255, 79, 163, 0.28)' },
+            meri: { color: '#ffd447', colorSoft: 'rgba(255, 212, 71, 0.26)' },
+            miki: { color: '#a855f7', colorSoft: 'rgba(168, 85, 247, 0.3)', imageScale: 1.22 },
+            rei: { color: '#38bdf8', colorSoft: 'rgba(56, 189, 248, 0.28)', imagePosition: 'right center' }
+        };
+
+        function applyMemberDefaults() {
+            Object.entries(memberData).forEach(([memberId, member]) => {
+                const defaults = memberColorDefaults[memberId];
+                if (!defaults) return;
+
+                member.color = member.color || defaults.color;
+                member.colorSoft = member.colorSoft || defaults.colorSoft;
+                member.imageScale = member.imageScale || defaults.imageScale;
+                member.imagePosition = member.imagePosition || defaults.imagePosition;
+            });
+        }
+
+        function getMemberTheme(memberId) {
+            const member = memberData[memberId] || {};
+            const defaults = memberColorDefaults[memberId] || memberColorDefaults.nami;
+
+            return {
+                color: member.color || defaults.color,
+                colorSoft: member.colorSoft || defaults.colorSoft
+            };
+        }
+
         function openMemberDetail(memberId) {
             const member = memberData[memberId];
+            const theme = getMemberTheme(memberId);
             const detailImage = document.getElementById('member-detail-image');
             const imagePosition = member.imagePosition || (memberId === 'rei' ? 'right center' : 'center center');
             const imageScale = member.imageScale || 1;
@@ -525,17 +563,20 @@
             detailImage.alt = member.name;
             detailImage.style.objectPosition = imagePosition;
             detailImage.style.transform = `scale(${imageScale})`;
+            detailImage.style.borderColor = theme.color;
             document.getElementById('member-detail-name').innerText = member.name;
+            document.getElementById('member-detail-name').style.textShadow = `0 0 22px ${theme.colorSoft}`;
             document.getElementById('member-detail-role').innerText = member.role;
+            document.getElementById('member-detail-role').style.color = theme.color;
             document.getElementById('member-detail-profile').innerText = member.profile;
             document.getElementById('member-detail-activities').innerHTML = member.activities.map(activity => `
-                <div class="border-l-4 border-pink-500 pl-4">
+                <div class="border-l-4 pl-4" style="border-left-color: ${theme.color};">
                     <h4 class="font-black text-lg">${activity.band}</h4>
                     <p class="opacity-70 leading-relaxed">${activity.detail}</p>
                 </div>
             `).join('');
             document.getElementById('member-detail-tags').innerHTML = member.tags.map(tag => `
-                <span class="border border-pink-500 text-pink-400 rounded-full px-4 py-2 text-sm font-bold">${tag}</span>
+                <span class="border rounded-full px-4 py-2 text-sm font-bold" style="border-color: ${theme.color}; color: ${theme.color}; background: ${theme.colorSoft};">${tag}</span>
             `).join('');
             document.getElementById('member-detail-modal').classList.remove('hidden');
             document.body.style.overflow = 'hidden';
@@ -583,6 +624,7 @@
             if (savedMembers) memberData = JSON.parse(savedMembers);
             if (savedLives) liveData = JSON.parse(savedLives);
             if (savedAlbums) albums = JSON.parse(savedAlbums);
+            applyMemberDefaults();
         }
 
         function formatLiveDate(dateValue) {
@@ -623,15 +665,17 @@
         function renderMemberGrid() {
             const grid = document.getElementById('member-grid');
             grid.innerHTML = Object.entries(memberData).map(([memberId, member]) => {
+                const theme = getMemberTheme(memberId);
                 const imagePosition = member.imagePosition || (memberId === 'rei' ? 'right center' : 'center center');
                 const imageScale = member.imageScale || 1;
                 return `
-                <button onclick="openMemberDetail('${memberId}')" class="group relative overflow-hidden rounded-3xl aspect-[3/4] hover-scale text-left">
+                <button onclick="openMemberDetail('${memberId}')" style="border-color: ${theme.color}; box-shadow: 0 0 24px ${theme.colorSoft};" class="group relative overflow-hidden rounded-3xl aspect-[3/4] hover-scale text-left border">
                     <img src="${member.image}" style="object-position: ${imagePosition}; transform: scale(${imageScale});" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition duration-500" alt="${member.name}">
                     <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80"></div>
+                    <div class="absolute inset-x-0 bottom-0 h-24 opacity-60" style="background: linear-gradient(0deg, ${theme.colorSoft}, transparent);"></div>
                     <div class="absolute bottom-6 left-6">
-                        <h3 class="text-2xl font-black italic">${member.name}</h3>
-                        <p class="text-pink-500 font-bold text-sm tracking-widest uppercase">${member.role}</p>
+                        <h3 class="text-2xl font-black italic" style="text-shadow: 0 0 18px ${theme.colorSoft};">${member.name}</h3>
+                        <p class="font-bold text-sm tracking-widest uppercase" style="color: ${theme.color};">${member.role}</p>
                     </div>
                 </button>
             `;
