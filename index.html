@@ -278,7 +278,7 @@
                     <form class="space-y-4" onsubmit="uploadAdminPhoto(event)">
                         <div>
                             <label class="text-xs uppercase font-bold opacity-60">Album</label>
-                            <select id="admin-photo-album" class="w-full bg-zinc-900 border border-white/20 p-3 rounded-xl mt-1"></select>
+                            <select id="admin-photo-album" onchange="renderAdminPhotoList()" class="w-full bg-zinc-900 border border-white/20 p-3 rounded-xl mt-1"></select>
                         </div>
                         <div>
                             <label class="text-xs uppercase font-bold opacity-60">Photo</label>
@@ -287,6 +287,10 @@
                         <input id="admin-photo-caption" type="text" placeholder="Caption" class="w-full bg-white/10 border border-white/20 p-3 rounded-xl">
                         <button type="submit" class="w-full rock-gradient py-3 rounded-full font-black">追加</button>
                     </form>
+                    <div class="border-t border-white/10 mt-8 pt-6">
+                        <h4 class="text-xl font-black mb-4">アルバム内の写真</h4>
+                        <div id="admin-photo-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                    </div>
                 </section>
 
                 <section class="glass rounded-3xl p-6">
@@ -841,6 +845,7 @@
             albumSelect.innerHTML = Object.entries(albums).map(([id, album]) => `<option value="${id}">${album.title}</option>`).join('');
             memberSelect.innerHTML = Object.entries(memberData).map(([id, member]) => `<option value="${id}">${member.name}</option>`).join('');
             initAdminPanelSections();
+            renderAdminPhotoList();
             renderAdminLiveList();
             loadAdminProfile();
         }
@@ -911,6 +916,61 @@
             if (tabName === 'live') {
                 renderAdminLiveList();
             }
+            if (tabName === 'photos') {
+                renderAdminPhotoList();
+            }
+        }
+
+        function renderAdminPhotoList() {
+            const list = document.getElementById('admin-photo-list');
+            const albumSelect = document.getElementById('admin-photo-album');
+            if (!list || !albumSelect) return;
+
+            const albumId = albumSelect.value;
+            const album = albums[albumId];
+            if (!album || album.photos.length === 0) {
+                list.innerHTML = '<p class="bg-white/5 rounded-2xl p-4 text-sm opacity-70 md:col-span-2">このアルバムにはまだ写真がありません。</p>';
+                return;
+            }
+
+            list.innerHTML = album.photos.map((photo, index) => `
+                <div class="bg-white/5 rounded-2xl overflow-hidden border border-white/10">
+                    <button type="button" onclick="viewPhoto('${photo.src}')" class="block w-full h-56 overflow-hidden bg-zinc-900">
+                        <img src="${photo.src}" class="w-full h-full object-cover hover:scale-105 transition duration-500" alt="${photo.alt || album.title}">
+                    </button>
+                    <div class="p-4 space-y-3">
+                        <label class="text-xs uppercase font-bold opacity-60">Comment</label>
+                        <textarea id="admin-photo-comment-${index}" rows="3" class="w-full bg-white/10 border border-white/20 p-3 rounded-xl" placeholder="写真コメント">${photo.comment || photo.alt || ''}</textarea>
+                        <div class="flex flex-wrap gap-2">
+                            <button type="button" onclick="saveAdminPhotoComment('${albumId}', ${index})" class="rock-gradient px-4 py-2 rounded-full text-xs font-bold">保存</button>
+                            <button type="button" onclick="deleteAdminPhoto('${albumId}', ${index})" class="border border-red-500/50 text-red-300 px-4 py-2 rounded-full text-xs font-bold hover:bg-red-500/10 transition">削除</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function saveAdminPhotoComment(albumId, index) {
+            const photo = albums[albumId]?.photos[index];
+            const input = document.getElementById(`admin-photo-comment-${index}`);
+            if (!photo || !input) return;
+
+            photo.comment = input.value;
+            photo.alt = input.value || albums[albumId].title;
+            saveAdminData();
+            renderAlbumCards();
+            alert('写真コメントを保存しました。');
+        }
+
+        function deleteAdminPhoto(albumId, index) {
+            const photo = albums[albumId]?.photos[index];
+            if (!photo) return;
+            if (!confirm('この写真を削除しますか？')) return;
+
+            albums[albumId].photos.splice(index, 1);
+            saveAdminData();
+            renderAlbumCards();
+            renderAdminPhotoList();
         }
 
         function getSortedLiveEntries() {
@@ -1075,9 +1135,10 @@
             const file = document.getElementById('admin-photo-file').files[0];
             const caption = document.getElementById('admin-photo-caption').value || albums[albumId].title;
             const src = await readImageFile(file);
-            albums[albumId].photos.push({ src, alt: caption });
+            albums[albumId].photos.push({ src, alt: caption, comment: caption });
             saveAdminData();
             refreshSite();
+            renderAdminPhotoList();
             event.target.reset();
             alert('写真を追加しました。');
         }
@@ -1157,6 +1218,7 @@
                 <button class="group relative h-72 overflow-hidden rounded-2xl bg-zinc-900" onclick="viewPhoto('${photo.src}')">
                     <img src="${photo.src}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="${photo.alt}">
                     <div class="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition"></div>
+                    ${(photo.comment || photo.alt) ? `<p class="absolute left-4 bottom-4 right-12 text-sm font-bold drop-shadow-lg">${photo.comment || photo.alt}</p>` : ''}
                     <i data-lucide="maximize-2" class="absolute bottom-4 right-4 w-6 h-6 opacity-0 group-hover:opacity-100 transition"></i>
                 </button>
                 `).join('');
