@@ -284,7 +284,7 @@
                             <label class="text-xs uppercase font-bold opacity-60">Photo</label>
                             <input id="admin-photo-file" type="file" accept="image/*" required class="w-full bg-white/10 border border-white/20 p-3 rounded-xl mt-1">
                         </div>
-                        <textarea id="admin-photo-caption" rows="3" placeholder="コメント（空欄ならなし）" class="w-full bg-white/10 border border-white/20 p-3 rounded-xl"></textarea>
+                        <textarea id="admin-photo-caption" rows="3" placeholder="Comment (optional)" class="w-full bg-white/10 border border-white/20 p-3 rounded-xl"></textarea>
                         <button type="submit" class="w-full rock-gradient py-3 rounded-full font-black">追加</button>
                     </form>
                     <div class="border-t border-white/10 mt-8 pt-6">
@@ -940,9 +940,9 @@
                     </button>
                     <div class="p-4 space-y-3">
                         <label class="text-xs uppercase font-bold opacity-60">Comment</label>
-                        <textarea id="admin-photo-comment-${index}" rows="3" class="w-full bg-white/10 border border-white/20 p-3 rounded-xl" placeholder="写真コメント">${photo.comment || photo.alt || ''}</textarea>
+                        <textarea id="admin-photo-comment-${index}" rows="3" class="w-full bg-white/10 border border-white/20 p-3 rounded-xl" placeholder="Photo comment">${photo.comment || photo.alt || ''}</textarea>
                         <div class="flex flex-wrap gap-2">
-                            <button type="button" onclick="saveAdminPhotoComment('${albumId}', ${index})" class="rock-gradient px-4 py-2 rounded-full text-xs font-bold">保存</button>
+                            <button type="button" onclick="saveAdminPhotoComment('${albumId}', ${index})" class="rock-gradient px-4 py-2 rounded-full text-xs font-bold">Save</button>
                             <button type="button" onclick="deleteAdminPhoto('${albumId}', ${index})" class="border border-red-500/50 text-red-300 px-4 py-2 rounded-full text-xs font-bold hover:bg-red-500/10 transition">削除</button>
                         </div>
                     </div>
@@ -1135,11 +1135,21 @@
             const file = document.getElementById('admin-photo-file').files[0];
             const comment = document.getElementById('admin-photo-caption').value.trim();
             const src = await readImageFile(file);
-            albums[albumId].photos.push({ src, alt: comment || albums[albumId].title, comment });
-            saveAdminData();
-            refreshSite();
-            renderAdminPhotoList();
+            const photo = { src, alt: comment || albums[albumId].title, comment };
+            albums[albumId].photos.push(photo);
+
+            try {
+                saveAdminData();
+            } catch (error) {
+                albums[albumId].photos.pop();
+                alert('写真を保存できませんでした。画像サイズを小さくしてもう一度試してください。');
+                return;
+            }
+
             event.target.reset();
+            refreshSite();
+            document.getElementById('admin-photo-album').value = albumId;
+            renderAdminPhotoList();
             alert('写真を追加しました。');
         }
 
