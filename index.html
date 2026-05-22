@@ -284,7 +284,7 @@
                             <label class="text-xs uppercase font-bold opacity-60">Photo</label>
                             <input id="admin-photo-file" type="file" accept="image/*" required class="w-full bg-white/10 border border-white/20 p-3 rounded-xl mt-1">
                         </div>
-                        <input id="admin-photo-caption" type="text" placeholder="Caption" class="w-full bg-white/10 border border-white/20 p-3 rounded-xl">
+                        <textarea id="admin-photo-caption" rows="3" placeholder="コメント（空欄ならなし）" class="w-full bg-white/10 border border-white/20 p-3 rounded-xl"></textarea>
                         <button type="submit" class="w-full rock-gradient py-3 rounded-full font-black">追加</button>
                     </form>
                     <div class="border-t border-white/10 mt-8 pt-6">
@@ -1133,9 +1133,9 @@
             event.preventDefault();
             const albumId = document.getElementById('admin-photo-album').value;
             const file = document.getElementById('admin-photo-file').files[0];
-            const caption = document.getElementById('admin-photo-caption').value || albums[albumId].title;
+            const comment = document.getElementById('admin-photo-caption').value.trim();
             const src = await readImageFile(file);
-            albums[albumId].photos.push({ src, alt: caption, comment: caption });
+            albums[albumId].photos.push({ src, alt: comment || albums[albumId].title, comment });
             saveAdminData();
             refreshSite();
             renderAdminPhotoList();
