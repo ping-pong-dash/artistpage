@@ -92,7 +92,7 @@
             <button onclick="openAdminLogin()" class="inline-flex border border-pink-500 px-3 md:px-4 py-2 rounded-full font-bold text-[10px] md:text-xs hover:bg-pink-500 transition">
                 MEMBER LOGIN
             </button>
-            <button onclick="viewReserveList()" class="rock-gradient px-6 py-2 rounded-full font-bold text-sm hover:opacity-90 transition shadow-lg">
+            <button id="reserve-list-nav-button" onclick="viewReserveList()" class="hidden rock-gradient px-6 py-2 rounded-full font-bold text-sm hover:opacity-90 transition shadow-lg">
                 取り置きリスト
             </button>
         </div>
@@ -741,6 +741,14 @@
             albumSelect.innerHTML = Object.entries(albums).map(([id, album]) => `<option value="${id}">${album.title}</option>`).join('');
             memberSelect.innerHTML = Object.entries(memberData).map(([id, member]) => `<option value="${id}">${member.name}</option>`).join('');
             loadAdminProfile();
+            updateReserveListButtonVisibility();
+        }
+
+        function updateReserveListButtonVisibility() {
+            const reserveButton = document.getElementById('reserve-list-nav-button');
+            if (!reserveButton) return;
+
+            reserveButton.classList.toggle('hidden', localStorage.getItem('ppdAdminLoggedIn') !== 'true');
         }
 
         function openAdminLogin() {
@@ -764,6 +772,7 @@
             document.getElementById('admin-login-modal').classList.add('hidden');
             document.getElementById('admin-panel-modal').classList.remove('hidden');
             document.getElementById('admin-password').value = '';
+            updateReserveListButtonVisibility();
             refreshSite();
         }
 
