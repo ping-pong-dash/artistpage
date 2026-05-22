@@ -344,6 +344,19 @@
                     <form class="space-y-3" onsubmit="saveAdminProfile(event)">
                         <label class="block text-xs uppercase font-bold opacity-60">メンバー</label>
                         <select id="admin-member-select" onchange="loadAdminProfile()" class="w-full bg-zinc-900 border border-white/20 p-3 rounded-xl"></select>
+                        <label class="block text-xs uppercase font-bold opacity-60">メンバー写真</label>
+                        <div class="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl p-3">
+                            <button type="button" onclick="document.getElementById('admin-member-photo').click()" class="group relative w-28 h-28 flex-none overflow-hidden rounded-xl border border-white/20 bg-zinc-900 text-left">
+                                <img id="admin-member-photo-preview" src="" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="Member photo preview">
+                                <div class="absolute inset-0 bg-black/30 group-hover:bg-black/15 transition"></div>
+                                <i data-lucide="image-plus" class="absolute left-1/2 top-1/2 w-6 h-6 -translate-x-1/2 -translate-y-1/2"></i>
+                            </button>
+                            <div class="min-w-0">
+                                <p class="text-xs font-black tracking-widest text-pink-400">MEMBER PHOTO</p>
+                                <p class="font-bold">クリックして写真を変更</p>
+                            </div>
+                        </div>
+                        <input id="admin-member-photo" type="file" accept="image/*" class="hidden" onchange="previewAdminMemberPhoto(event)">
                         <label class="block text-xs uppercase font-bold opacity-60">担当 / パート</label>
                         <input id="admin-member-role" type="text" placeholder="Role" class="w-full bg-white/10 border border-white/20 p-3 rounded-xl">
                         <label class="block text-xs uppercase font-bold opacity-60">プロフィール</label>
@@ -351,16 +364,6 @@
                         <label class="block text-xs uppercase font-bold opacity-60">アナザーバンド</label>
                         <div id="admin-activity-image-list" class="space-y-3"></div>
                         <button type="button" onclick="addAdminActivityEditor()" class="w-full border border-white/20 py-3 rounded-full font-black hover:border-pink-500 transition">アナザーバンドを追加</button>
-                        <label class="block text-xs uppercase font-bold opacity-60">メンバー写真</label>
-                        <button type="button" onclick="document.getElementById('admin-member-photo').click()" class="group relative w-full overflow-hidden rounded-2xl border border-white/20 bg-zinc-900 aspect-[4/3] text-left">
-                            <img id="admin-member-photo-preview" src="" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="Member photo preview">
-                            <div class="absolute inset-0 bg-black/35 group-hover:bg-black/20 transition"></div>
-                            <div class="absolute bottom-4 left-4 right-4">
-                                <p class="text-xs font-black tracking-widest text-pink-400">MEMBER PHOTO</p>
-                                <p class="font-bold">クリックして写真を変更</p>
-                            </div>
-                        </button>
-                        <input id="admin-member-photo" type="file" accept="image/*" class="hidden" onchange="previewAdminMemberPhoto(event)">
                         <input id="admin-activity-image-file" type="file" accept="image/*" class="hidden" onchange="previewAdminActivityImage(event)">
                         <button type="submit" class="w-full rock-gradient py-3 rounded-full font-black">保存</button>
                     </form>
