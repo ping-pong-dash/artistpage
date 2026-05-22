@@ -163,24 +163,24 @@
                         <img src="https://placehold.co/400x400/222/white?text=Band+T-Shirt+Neon" class="w-full h-full object-cover" alt="T-Shirt">
                     </div>
                     <h3 class="text-xl font-bold mb-2">Neon Logo T-Shirt</h3>
-                    <p class="text-pink-500 font-black text-2xl mb-4">¥3,500</p>
-                    <button onclick="addToCart('Neon Logo T-Shirt', 3500)" class="w-full bg-white text-black py-3 rounded-full font-bold hover:bg-zinc-200 transition">ADD TO CART</button>
+                    <p class="text-pink-500 font-black text-sm tracking-widest mb-2">COMING SOON</p>
+                    <p class="text-sm opacity-70 text-center">Available later on another shop site.</p>
                 </div>
                 <div class="glass p-4 rounded-3xl flex flex-col items-center">
                     <div class="w-full aspect-square bg-zinc-800 rounded-2xl mb-4 overflow-hidden">
                         <img src="https://placehold.co/400x400/222/white?text=Live+Towel" class="w-full h-full object-cover" alt="Towel">
                     </div>
                     <h3 class="text-xl font-bold mb-2">Dash Sports Towel</h3>
-                    <p class="text-pink-500 font-black text-2xl mb-4">¥2,000</p>
-                    <button onclick="addToCart('Dash Sports Towel', 2000)" class="w-full bg-white text-black py-3 rounded-full font-bold hover:bg-zinc-200 transition">ADD TO CART</button>
+                    <p class="text-pink-500 font-black text-sm tracking-widest mb-2">COMING SOON</p>
+                    <p class="text-sm opacity-70 text-center">Available later on another shop site.</p>
                 </div>
                 <div class="glass p-4 rounded-3xl flex flex-col items-center">
                     <div class="w-full aspect-square bg-zinc-800 rounded-2xl mb-4 overflow-hidden">
                         <img src="https://placehold.co/400x400/222/white?text=Sticker+Set" class="w-full h-full object-cover" alt="Stickers">
                     </div>
                     <h3 class="text-xl font-bold mb-2">Member Sticker Set</h3>
-                    <p class="text-pink-500 font-black text-2xl mb-4">¥800</p>
-                    <button onclick="addToCart('Member Sticker Set', 800)" class="w-full bg-white text-black py-3 rounded-full font-bold hover:bg-zinc-200 transition">ADD TO CART</button>
+                    <p class="text-pink-500 font-black text-sm tracking-widest mb-2">COMING SOON</p>
+                    <p class="text-sm opacity-70 text-center">Available later on another shop site.</p>
                 </div>
             </div>
         </div>
@@ -395,13 +395,6 @@
 
     <div id="photo-modal" class="fixed inset-0 z-[110] hidden flex items-center justify-center p-4 bg-black bg-opacity-95" onclick="closePhoto()">
         <img id="modal-img" src="" class="max-w-full max-h-full rounded-lg shadow-2xl" alt="Large View" onclick="event.stopPropagation()">
-    </div>
-
-    <div id="cart-badge" class="fixed bottom-8 right-8 z-[90] hidden">
-        <button onclick="viewCart()" class="rock-gradient w-16 h-16 rounded-full shadow-2xl flex items-center justify-center hover-scale animate-pulse-neon">
-            <i data-lucide="shopping-cart" class="w-8 h-8"></i>
-            <span id="cart-count" class="absolute -top-1 -right-1 bg-white text-black font-bold text-xs w-6 h-6 rounded-full flex items-center justify-center">0</span>
-        </button>
     </div>
 
     <script>
@@ -1280,38 +1273,6 @@
             document.getElementById('photo-modal').classList.add('hidden');
         }
 
-        let cart = [];
-        function addToCart(name, price) {
-            cart.push({ name, price });
-            updateCartUI();
-
-            const feedback = document.createElement('div');
-            feedback.className = 'fixed top-24 left-1/2 -translate-x-1/2 bg-green-500 text-white px-6 py-2 rounded-full font-bold z-[120] animate-bounce';
-            feedback.innerText = `${name} added to cart!`;
-            document.body.appendChild(feedback);
-            setTimeout(() => feedback.remove(), 2000);
-        }
-
-        function updateCartUI() {
-            const badge = document.getElementById('cart-badge');
-            const count = document.getElementById('cart-count');
-            if (cart.length > 0) {
-                badge.classList.remove('hidden');
-                count.innerText = cart.length;
-            }
-        }
-
-        function viewCart() {
-            const total = cart.reduce((sum, item) => sum + item.price, 0);
-            const itemsList = cart.map(i => i.name).join('\n- ');
-            const msg = `Shopping Cart Items:\n- ${itemsList}\n\nTotal: ¥${total}\n\n決済画面へ進みますか？`;
-            if (confirm(msg)) {
-                alert('決済処理を開始します (Mock処理)');
-                cart = [];
-                updateCartUI();
-                document.getElementById('cart-badge').classList.add('hidden');
-            }
-        }
 
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
