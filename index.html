@@ -479,6 +479,7 @@
                 name: 'REi',
                 role: 'Drums',
                 image: 'assets/members/rei.jpg',
+                imagePosition: 'right center',
                 profile: 'ドラム担当。スピード感のあるビートとメリハリの強いフィルで、ライブ全体を駆動する。楽曲の展開に合わせたダイナミクスでバンドの爆発力を引き出す。',
                 activities: [
                     { band: 'サポートドラム', detail: 'パンク、ポップロック系バンドのサポートドラマーとしてライブやレコーディングに参加。' },
@@ -490,8 +491,11 @@
 
         function openMemberDetail(memberId) {
             const member = memberData[memberId];
-            document.getElementById('member-detail-image').src = member.image;
-            document.getElementById('member-detail-image').alt = member.name;
+            const detailImage = document.getElementById('member-detail-image');
+            const imagePosition = member.imagePosition || (memberId === 'rei' ? 'right center' : 'center center');
+            detailImage.src = member.image;
+            detailImage.alt = member.name;
+            detailImage.style.objectPosition = imagePosition;
             document.getElementById('member-detail-name').innerText = member.name;
             document.getElementById('member-detail-role').innerText = member.role;
             document.getElementById('member-detail-profile').innerText = member.profile;
@@ -589,16 +593,19 @@
 
         function renderMemberGrid() {
             const grid = document.getElementById('member-grid');
-            grid.innerHTML = Object.entries(memberData).map(([memberId, member]) => `
+            grid.innerHTML = Object.entries(memberData).map(([memberId, member]) => {
+                const imagePosition = member.imagePosition || (memberId === 'rei' ? 'right center' : 'center center');
+                return `
                 <button onclick="openMemberDetail('${memberId}')" class="group relative overflow-hidden rounded-3xl aspect-[3/4] hover-scale text-left">
-                    <img src="${member.image}" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition duration-500" alt="${member.name}">
+                    <img src="${member.image}" style="object-position: ${imagePosition};" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition duration-500" alt="${member.name}">
                     <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80"></div>
                     <div class="absolute bottom-6 left-6">
                         <h3 class="text-2xl font-black italic">${member.name}</h3>
                         <p class="text-pink-500 font-bold text-sm tracking-widest uppercase">${member.role}</p>
                     </div>
                 </button>
-            `).join('');
+            `;
+            }).join('');
         }
 
         function isPastLive(live) {
