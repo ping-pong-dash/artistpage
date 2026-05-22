@@ -77,6 +77,30 @@
             background: linear-gradient(90deg, rgba(255, 0, 128, 0), rgba(255, 0, 128, 0.95), rgba(121, 40, 202, 0.9), rgba(255, 255, 255, 0));
             box-shadow: 0 0 18px rgba(255, 0, 128, 0.45);
         }
+        @keyframes hero-logo-burst {
+            0% {
+                transform: translate3d(-36vw, -18vh, 0) rotate(-28deg) scale(0.86);
+            }
+            18% {
+                transform: translate3d(30vw, 12vh, 0) rotate(24deg) scale(1.06);
+            }
+            36% {
+                transform: translate3d(-24vw, 18vh, 0) rotate(-18deg) scale(0.96);
+            }
+            54% {
+                transform: translate3d(22vw, -14vh, 0) rotate(20deg) scale(1.02);
+            }
+            72% {
+                transform: translate3d(-14vw, -10vh, 0) rotate(-12deg) scale(0.98);
+            }
+            100% {
+                transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+            }
+        }
+        .hero-logo-burst {
+            animation: hero-logo-burst 3.8s cubic-bezier(0.18, 0.89, 0.32, 1.28) both;
+            will-change: transform;
+        }
         .hero-slide {
             opacity: 0;
             transition: opacity 1200ms ease, filter 700ms ease, transform 7000ms ease;
@@ -115,7 +139,7 @@
             <div class="absolute inset-0 bg-black bg-opacity-60"></div>
         </div>
         <div class="relative z-10 text-center px-4">
-            <img src="assets/logos/band-logo.jpg" class="w-40 h-40 md:w-56 md:h-56 mx-auto mb-6 rounded-full object-cover border-4 border-pink-500 shadow-2xl shadow-pink-500/30" alt="ping-pong-dash logo">
+            <img src="assets/logos/band-logo.jpg" class="hero-logo-burst w-40 h-40 md:w-56 md:h-56 mx-auto mb-6 rounded-full object-cover border-4 border-pink-500 shadow-2xl shadow-pink-500/30" alt="ping-pong-dash logo">
             <h1 class="text-6xl md:text-9xl font-black italic tracking-tighter mb-4">
                 <span class="hero-title-dash text-transparent bg-clip-text rock-gradient">Ping-Pong-Dash.</span>
             </h1>
