@@ -338,6 +338,17 @@
                             </div>
                         </button>
                         <input id="admin-member-photo" type="file" accept="image/*" class="hidden" onchange="previewAdminMemberPhoto(event)">
+                        <div class="border-t border-white/10 pt-4 space-y-3">
+                            <label class="text-xs uppercase font-bold opacity-60">Other band image</label>
+                            <select id="admin-activity-image-select" class="w-full bg-zinc-900 border border-white/20 p-3 rounded-xl"></select>
+                            <button type="button" onclick="document.getElementById('admin-activity-image-file').click()" class="group relative w-full overflow-hidden rounded-2xl border border-white/20 bg-zinc-900 aspect-[16/9] text-left">
+                                <img id="admin-activity-image-preview" src="" class="w-full h-full object-cover opacity-80 group-hover:scale-105 transition duration-500" alt="Other band image preview">
+                                <div class="absolute inset-0 bg-black/35 group-hover:bg-black/20 transition"></div>
+                                <p class="absolute bottom-4 left-4 right-4 font-bold">活動画像を選択</p>
+                            </button>
+                            <input id="admin-activity-image-file" type="file" accept="image/*" class="hidden" onchange="previewAdminActivityImage(event)">
+                            <button type="button" onclick="clearAdminActivityImage()" class="w-full border border-white/20 py-3 rounded-full font-black hover:border-pink-500 transition">活動画像を削除</button>
+                        </div>
                         <button type="submit" class="w-full rock-gradient py-3 rounded-full font-black">保存</button>
                     </form>
                 </section>
@@ -577,9 +588,12 @@
             document.getElementById('member-detail-role').style.color = theme.color;
             document.getElementById('member-detail-profile').innerText = member.profile;
             document.getElementById('member-detail-activities').innerHTML = member.activities.map(activity => `
-                <div class="border-l-4 pl-4" style="border-left-color: ${theme.color};">
-                    <h4 class="font-black text-lg">${activity.band}</h4>
-                    <p class="opacity-70 leading-relaxed">${activity.detail}</p>
+                <div class="border-l-4 pl-4 flex gap-4 items-start" style="border-left-color: ${theme.color};">
+                    ${activity.image ? `<img src="${activity.image}" class="w-24 h-24 rounded-xl object-cover bg-zinc-900 flex-none" alt="${activity.band}">` : ''}
+                    <div>
+                        <h4 class="font-black text-lg">${activity.band}</h4>
+                        <p class="opacity-70 leading-relaxed">${activity.detail}</p>
+                    </div>
                 </div>
             `).join('');
             document.getElementById('member-detail-tags').innerHTML = member.tags.map(tag => `
@@ -1251,6 +1265,26 @@
             document.getElementById('admin-member-activities').value = member.activities.map(item => `${item.band}: ${item.detail}`).join('\n');
             document.getElementById('admin-member-photo-preview').src = member.image;
             document.getElementById('admin-member-photo-preview').style.objectPosition = member.imagePosition || (memberId === 'rei' ? 'right center' : 'center center');
+            renderAdminActivityImageControls(member);
+        }
+
+        function parseAdminActivities() {
+            return document.getElementById('admin-member-activities').value.split('\n').filter(Boolean).map(line => {
+                const [band, ...detail] = line.split(':');
+                return { band: band.trim(), detail: detail.join(':').trim() || '活動内容を編集中です。' };
+            });
+        }
+
+        function renderAdminActivityImageControls(member) {
+            const select = document.getElementById('admin-activity-image-select');
+            const preview = document.getElementById('admin-activity-image-preview');
+            if (!select || !preview) return;
+
+            select.innerHTML = member.activities.map((activity, index) => `<option value="${index}">${activity.band || `Activity ${index + 1}`}</option>`).join('');
+            preview.src = member.activities[0]?.image || '';
+            select.onchange = () => {
+                preview.src = member.activities[Number(select.value)]?.image || '';
+            };
         }
 
         async function previewAdminMemberPhoto(event) {
@@ -1260,22 +1294,46 @@
             document.getElementById('admin-member-photo-preview').src = await resizeImageFile(file);
         }
 
+        async function previewAdminActivityImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            document.getElementById('admin-activity-image-preview').src = await resizeImageFile(file, 1200, 0.8);
+        }
+
+        function clearAdminActivityImage() {
+            document.getElementById('admin-activity-image-preview').src = '';
+            document.getElementById('admin-activity-image-file').value = '';
+        }
+
         async function saveAdminProfile(event) {
             event.preventDefault();
             const memberId = document.getElementById('admin-member-select').value;
             const member = memberData[memberId];
             const file = document.getElementById('admin-member-photo').files[0];
+            const previousActivities = member.activities || [];
+            const activityImageIndex = Number(document.getElementById('admin-activity-image-select')?.value || 0);
+            const activityImagePreview = document.getElementById('admin-activity-image-preview')?.getAttribute('src') || '';
+            const previousActivityImages = new Map(previousActivities.map(activity => [activity.band, activity.image]));
             member.role = document.getElementById('admin-member-role').value;
             member.profile = document.getElementById('admin-member-profile').value;
-            member.activities = document.getElementById('admin-member-activities').value.split('\n').filter(Boolean).map(line => {
-                const [band, ...detail] = line.split(':');
-                return { band: band.trim(), detail: detail.join(':').trim() || '活動内容を編集中です。' };
-            });
+            member.activities = parseAdminActivities().map((activity, index) => ({
+                ...activity,
+                image: previousActivityImages.get(activity.band) || previousActivities[index]?.image || ''
+            }));
+            if (member.activities[activityImageIndex]) {
+                if (activityImagePreview.startsWith('data:image')) {
+                    member.activities[activityImageIndex].image = activityImagePreview;
+                } else if (!activityImagePreview) {
+                    member.activities[activityImageIndex].image = '';
+                }
+            }
             if (file) {
                 member.image = await resizeImageFile(file);
             }
             saveAdminData();
             refreshSite();
+            renderAdminActivityImageControls(member);
             alert('プロフィールを保存しました。');
         }
 
