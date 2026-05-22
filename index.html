@@ -494,6 +494,7 @@
                 name: 'MiKi',
                 role: 'Bass & Vocals',
                 image: 'assets/members/miki.jpg',
+                imageScale: 1.12,
                 profile: 'ベースボーカルとして低音と声の両方でバンドの中心を支える。跳ねるベースラインと芯のある歌で、ping-pong-dashのダンス感とロック感をつなぐ。',
                 activities: [
                     { band: 'セッションベース', detail: 'ロック、ポップス、オルタナ系のセッションライブに参加。安定したグルーヴで楽曲を支える。' },
@@ -519,9 +520,11 @@
             const member = memberData[memberId];
             const detailImage = document.getElementById('member-detail-image');
             const imagePosition = member.imagePosition || (memberId === 'rei' ? 'right center' : 'center center');
+            const imageScale = member.imageScale || 1;
             detailImage.src = member.image;
             detailImage.alt = member.name;
             detailImage.style.objectPosition = imagePosition;
+            detailImage.style.transform = `scale(${imageScale})`;
             document.getElementById('member-detail-name').innerText = member.name;
             document.getElementById('member-detail-role').innerText = member.role;
             document.getElementById('member-detail-profile').innerText = member.profile;
@@ -621,9 +624,10 @@
             const grid = document.getElementById('member-grid');
             grid.innerHTML = Object.entries(memberData).map(([memberId, member]) => {
                 const imagePosition = member.imagePosition || (memberId === 'rei' ? 'right center' : 'center center');
+                const imageScale = member.imageScale || 1;
                 return `
                 <button onclick="openMemberDetail('${memberId}')" class="group relative overflow-hidden rounded-3xl aspect-[3/4] hover-scale text-left">
-                    <img src="${member.image}" style="object-position: ${imagePosition};" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition duration-500" alt="${member.name}">
+                    <img src="${member.image}" style="object-position: ${imagePosition}; transform: scale(${imageScale});" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition duration-500" alt="${member.name}">
                     <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80"></div>
                     <div class="absolute bottom-6 left-6">
                         <h3 class="text-2xl font-black italic">${member.name}</h3>
