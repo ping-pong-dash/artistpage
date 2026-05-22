@@ -38,6 +38,14 @@
         .animate-pulse-neon {
             animation: pulse-neon 2s infinite;
         }
+        .hero-slide {
+            opacity: 0;
+            transition: opacity 1200ms ease, filter 700ms ease, transform 7000ms ease;
+        }
+        .hero-slide.is-active {
+            opacity: 0.4;
+            transform: scale(1.04);
+        }
     </style>
 </head>
 <body>
@@ -66,7 +74,8 @@
 
     <section class="relative h-screen flex items-center justify-center overflow-hidden">
         <div class="absolute inset-0 z-0">
-            <img src="assets/photos/live/20250927-ppd-jmatsuri/nami.jpg" class="w-full h-full object-cover opacity-40 grayscale hover:grayscale-0 transition duration-700" alt="Hero Background">
+            <img id="hero-slide-a" src="assets/photos/live/20250927-ppd-jmatsuri/nami.jpg" class="hero-slide is-active absolute inset-0 w-full h-full object-cover grayscale hover:grayscale-0" alt="Hero Background">
+            <img id="hero-slide-b" src="assets/photos/live/20250927-ppd-jmatsuri/meri.jpg" class="hero-slide absolute inset-0 w-full h-full object-cover grayscale hover:grayscale-0" alt="Hero Background">
             <div class="absolute inset-0 bg-black bg-opacity-60"></div>
         </div>
         <div class="relative z-10 text-center px-4">
@@ -348,6 +357,44 @@
             } else {
                 document.body.style.overflow = 'auto';
             }
+        }
+
+        const heroPhotos = [
+            { src: 'assets/photos/live/20250927-ppd-jmatsuri/nami.jpg', alt: 'PPD J祭 NAMi' },
+            { src: 'assets/photos/live/20250927-ppd-jmatsuri/meri.jpg', alt: 'PPD J祭 MERi' },
+            { src: 'assets/photos/live/20250927-ppd-jmatsuri/miki.jpg', alt: 'PPD J祭 MiKi' },
+            { src: 'assets/photos/live/20250927-ppd-jmatsuri/rei.jpg', alt: 'PPD J祭 REi' }
+        ];
+        let heroPhotoIndex = 0;
+        let heroSlideshowTimer = null;
+
+        function initHeroSlideshow() {
+            if (heroSlideshowTimer || heroPhotos.length < 2) return;
+
+            const slides = [
+                document.getElementById('hero-slide-a'),
+                document.getElementById('hero-slide-b')
+            ].filter(Boolean);
+
+            if (slides.length < 2) return;
+
+            slides[0].src = heroPhotos[0].src;
+            slides[0].alt = heroPhotos[0].alt;
+            slides[1].src = heroPhotos[1].src;
+            slides[1].alt = heroPhotos[1].alt;
+
+            let activeSlide = 0;
+            heroSlideshowTimer = setInterval(() => {
+                const nextSlide = activeSlide === 0 ? 1 : 0;
+                heroPhotoIndex = (heroPhotoIndex + 1) % heroPhotos.length;
+                const nextPhoto = heroPhotos[heroPhotoIndex];
+
+                slides[nextSlide].src = nextPhoto.src;
+                slides[nextSlide].alt = nextPhoto.alt;
+                slides[nextSlide].classList.add('is-active');
+                slides[activeSlide].classList.remove('is-active');
+                activeSlide = nextSlide;
+            }, 4500);
         }
 
         let memberData = {
@@ -857,6 +904,7 @@
         });
 
         loadAdminData();
+        initHeroSlideshow();
         refreshSite();
     </script>
 </body>
