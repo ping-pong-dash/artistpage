@@ -320,6 +320,17 @@
                         <input id="admin-live-charge" type="text" placeholder="Charge" class="w-full bg-white/10 border border-white/20 p-3 rounded-xl">
                         <label class="block text-xs uppercase font-bold opacity-60">詳細</label>
                         <textarea id="admin-live-info" placeholder="Live detail" rows="4" class="w-full bg-white/10 border border-white/20 p-3 rounded-xl"></textarea>
+                        <label class="block text-xs uppercase font-bold opacity-60">フライヤー画像</label>
+                        <button type="button" onclick="document.getElementById('admin-live-flyer').click()" class="group relative w-full overflow-hidden rounded-2xl border border-white/20 bg-zinc-900 aspect-[3/4] text-left">
+                            <img id="admin-live-flyer-preview" src="" class="w-full h-full object-cover opacity-80 group-hover:scale-105 transition duration-500" alt="Live flyer preview">
+                            <div class="absolute inset-0 bg-black/35 group-hover:bg-black/20 transition"></div>
+                            <div class="absolute bottom-4 left-4 right-4">
+                                <p class="text-xs font-black tracking-widest text-pink-400">FLYER</p>
+                                <p class="font-bold">クリックしてフライヤーを登録</p>
+                            </div>
+                        </button>
+                        <input id="admin-live-flyer" type="file" accept="image/*" class="hidden" onchange="previewAdminLiveFlyer(event)">
+                        <button type="button" onclick="clearAdminLiveFlyer()" class="w-full border border-white/20 py-3 rounded-full font-black hover:border-pink-500 transition">フライヤー画像を削除</button>
                         <label class="block text-xs uppercase font-bold opacity-60">表示設定</label>
                         <label class="flex items-center gap-3 text-sm font-bold bg-white/5 border border-white/10 rounded-xl p-3">
                             <input id="admin-live-visible" type="checkbox" checked class="w-5 h-5 accent-pink-500">
@@ -362,25 +373,32 @@
 
     <div id="live-detail-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black bg-opacity-90 backdrop-blur-md" onclick="closeLiveDetail()"></div>
-        <div class="relative glass max-w-2xl w-full p-8 rounded-3xl shadow-2xl border-pink-500 border">
+        <div class="relative glass max-w-4xl w-full p-8 rounded-3xl shadow-2xl border-pink-500 border">
             <button onclick="closeLiveDetail()" class="absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center hover:bg-white/10 transition" aria-label="Close live detail">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
-            <p id="live-detail-date" class="text-pink-500 font-black text-sm tracking-widest mb-3"></p>
-            <h2 id="live-detail-title" class="text-4xl font-black italic mb-2"></h2>
-            <p id="live-detail-venue" class="text-lg opacity-70 mb-8"></p>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                <div class="bg-white/5 rounded-2xl p-4">
-                    <p class="text-xs uppercase font-bold opacity-50 mb-1">OPEN / START</p>
-                    <p id="live-detail-time" class="font-bold"></p>
+            <div class="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_18rem] gap-8 items-start">
+                <div>
+                    <p id="live-detail-date" class="text-pink-500 font-black text-sm tracking-widest mb-3"></p>
+                    <h2 id="live-detail-title" class="text-4xl font-black italic mb-2"></h2>
+                    <p id="live-detail-venue" class="text-lg opacity-70 mb-8"></p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                        <div class="bg-white/5 rounded-2xl p-4">
+                            <p class="text-xs uppercase font-bold opacity-50 mb-1">OPEN / START</p>
+                            <p id="live-detail-time" class="font-bold"></p>
+                        </div>
+                        <div class="bg-white/5 rounded-2xl p-4">
+                            <p class="text-xs uppercase font-bold opacity-50 mb-1">CHARGE</p>
+                            <p id="live-detail-charge" class="font-bold"></p>
+                        </div>
+                    </div>
+                    <p id="live-detail-info" class="opacity-80 leading-relaxed mb-8"></p>
+                    <button id="live-detail-reserve" class="rock-gradient w-full py-4 rounded-full font-black text-lg hover:brightness-110 transition">取り置きリストに入れる</button>
                 </div>
-                <div class="bg-white/5 rounded-2xl p-4">
-                    <p class="text-xs uppercase font-bold opacity-50 mb-1">CHARGE</p>
-                    <p id="live-detail-charge" class="font-bold"></p>
-                </div>
+                <button id="live-detail-flyer-wrap" onclick="event.stopPropagation(); viewPhoto(document.getElementById('live-detail-flyer').src)" class="hidden group overflow-hidden rounded-2xl bg-zinc-900 border border-white/10 aspect-[3/4]">
+                    <img id="live-detail-flyer" src="" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="Live flyer">
+                </button>
             </div>
-            <p id="live-detail-info" class="opacity-80 leading-relaxed mb-8"></p>
-            <button id="live-detail-reserve" class="rock-gradient w-full py-4 rounded-full font-black text-lg hover:brightness-110 transition">取り置きリストに入れる</button>
         </div>
     </div>
 
@@ -676,12 +694,14 @@
                 const date = new Date(`${live.dateValue}T00:00:00`);
                 const monthDay = `${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
                 const day = live.date.split(' ').pop();
+                const flyer = live.flyer || '';
                 const action = past
                     ? '<span class="text-xs px-3 py-1 border border-pink-500 text-pink-500 rounded-full">THANK YOU</span><button onclick="event.stopPropagation()" class="bg-zinc-700 text-zinc-300 px-8 py-3 rounded-full font-bold w-full md:w-auto cursor-not-allowed" disabled>THANK YOU</button>'
                     : `<span class="text-xs px-3 py-1 border border-green-500 text-green-500 rounded-full">取り置き受付中</span><button onclick="event.stopPropagation(); addToReserve('${liveId}')" class="rock-gradient px-8 py-3 rounded-full font-bold w-full md:w-auto">リストに入れる</button>`;
                 return `
                     <div onclick="openLiveDetail('${liveId}')" class="glass p-6 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-6 hover:border-pink-500 transition group cursor-pointer">
                         <div class="flex items-center gap-8 w-full md:w-auto">
+                            ${flyer ? `<img src="${flyer}" class="w-20 h-28 rounded-xl object-cover bg-zinc-900 flex-none" alt="${live.title} flyer">` : ''}
                             <div class="text-center">
                                 <div class="text-pink-500 font-black text-2xl">${monthDay}</div>
                                 <div class="text-xs opacity-60">${day}</div>
@@ -689,6 +709,7 @@
                             <div>
                                 <h3 class="text-xl font-bold group-hover:text-pink-400 transition">${live.title}</h3>
                                 <p class="text-sm opacity-60">${live.venue}</p>
+                                <p class="text-xs text-pink-500 font-bold mt-2 opacity-0 group-hover:opacity-100 transition">クリックで詳細を見る</p>
                             </div>
                         </div>
                         <div class="flex items-center gap-4 w-full md:w-auto justify-end">${action}</div>
@@ -734,6 +755,15 @@
             document.getElementById('live-detail-time').innerText = live.time;
             document.getElementById('live-detail-charge').innerText = live.charge;
             document.getElementById('live-detail-info').innerText = live.info;
+            const flyerWrap = document.getElementById('live-detail-flyer-wrap');
+            const flyerImage = document.getElementById('live-detail-flyer');
+            if (live.flyer) {
+                flyerImage.src = live.flyer;
+                flyerWrap.classList.remove('hidden');
+            } else {
+                flyerImage.src = '';
+                flyerWrap.classList.add('hidden');
+            }
 
             if (isPastLive(live)) {
                 reserveButton.innerText = 'THANK YOU';
@@ -1041,13 +1071,16 @@
 
                 return `
                     <div class="bg-white/5 rounded-2xl p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                        <div>
-                            <div class="flex flex-wrap items-center gap-3 mb-2">
-                                <span class="text-xs px-3 py-1 border rounded-full ${statusClass}">${statusText}</span>
-                                <p class="text-xs opacity-60">${live.date || formatLiveDate(live.dateValue)}</p>
+                        <div class="flex items-center gap-4">
+                            ${live.flyer ? `<img src="${live.flyer}" class="w-16 h-20 rounded-xl object-cover bg-zinc-900 flex-none" alt="${live.title} flyer">` : ''}
+                            <div>
+                                <div class="flex flex-wrap items-center gap-3 mb-2">
+                                    <span class="text-xs px-3 py-1 border rounded-full ${statusClass}">${statusText}</span>
+                                    <p class="text-xs opacity-60">${live.date || formatLiveDate(live.dateValue)}</p>
+                                </div>
+                                <p class="font-black text-lg">${live.title}</p>
+                                <p class="text-sm opacity-70">${live.venue}</p>
                             </div>
-                            <p class="font-black text-lg">${live.title}</p>
-                            <p class="text-sm opacity-70">${live.venue}</p>
                         </div>
                         <div class="flex flex-wrap gap-2">
                             <button onclick="editAdminLive('${liveId}')" class="border border-white/20 px-4 py-2 rounded-full text-xs font-bold hover:border-pink-500 transition">編集</button>
@@ -1059,12 +1092,25 @@
             }).join('');
         }
 
+        async function previewAdminLiveFlyer(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            document.getElementById('admin-live-flyer-preview').src = await resizeImageFile(file, 1400, 0.82);
+        }
+
+        function clearAdminLiveFlyer() {
+            document.getElementById('admin-live-flyer-preview').src = '';
+            document.getElementById('admin-live-flyer').value = '';
+        }
+
         function saveAdminLive(event) {
             event.preventDefault();
 
             const editingId = document.getElementById('admin-live-id').value;
             const dateValue = document.getElementById('admin-live-date').value;
             const liveId = editingId || `live${Date.now()}`;
+            const flyer = document.getElementById('admin-live-flyer-preview')?.getAttribute('src') || '';
 
             liveData[liveId] = {
                 title: document.getElementById('admin-live-title').value,
@@ -1074,7 +1120,8 @@
                 time: document.getElementById('admin-live-time').value || 'OPEN / START TBA',
                 charge: document.getElementById('admin-live-charge').value || 'TBA',
                 info: document.getElementById('admin-live-info').value || '詳細は後日発表します。',
-                visible: document.getElementById('admin-live-visible').checked
+                visible: document.getElementById('admin-live-visible').checked,
+                flyer
             };
 
             albums[liveId] = {
@@ -1101,6 +1148,7 @@
             document.getElementById('admin-live-time').value = live.time || '';
             document.getElementById('admin-live-charge').value = live.charge || '';
             document.getElementById('admin-live-info').value = live.info || '';
+            document.getElementById('admin-live-flyer-preview').src = live.flyer || '';
             document.getElementById('admin-live-visible').checked = live.visible !== false;
             document.getElementById('admin-live-submit').innerText = '更新';
             switchAdminTab('live');
@@ -1112,6 +1160,8 @@
 
             form.reset();
             document.getElementById('admin-live-id').value = '';
+            document.getElementById('admin-live-flyer-preview').src = '';
+            document.getElementById('admin-live-flyer').value = '';
             document.getElementById('admin-live-visible').checked = true;
             document.getElementById('admin-live-submit').innerText = '追加';
         }
