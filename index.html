@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ping-pong-dash Official Website</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            background-color: #0a0a0a;
+            color: #ffffff;
+            scroll-behavior: smooth;
+        }
+        .rock-gradient {
+            background: linear-gradient(135deg, #ff0080 0%, #7928ca 100%);
+        }
+        .text-neon {
+            text-shadow: 0 0 10px rgba(255, 0, 128, 0.7), 0 0 20px rgba(255, 0, 128, 0.5);
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .hover-scale {
+            transition: transform 0.3s ease;
+        }
+        .hover-scale:hover {
+            transform: scale(1.05);
+        }
+        @keyframes pulse-neon {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .animate-pulse-neon {
+            animation: pulse-neon 2s infinite;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="fixed top-0 w-full z-50 glass px-6 py-4 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <img src="assets/logos/band-logo.jpg" class="w-12 h-12 rounded-full object-cover border border-pink-500/60" alt="ping-pong-dash logo">
+            <div class="text-2xl font-black tracking-tighter text-neon">ping-pong-dash</div>
+        </div>
+        <div class="hidden md:flex space-x-8 font-bold text-sm uppercase tracking-widest">
+            <a href="#live" class="hover:text-pink-500 transition">Live</a>
+            <a href="#members" class="hover:text-pink-500 transition">Members</a>
+            <a href="#gallery" class="hover:text-pink-500 transition">Gallery</a>
+            <a href="#goods" class="hover:text-pink-500 transition">Goods</a>
+            <a href="#instagram" class="hover:text-pink-500 transition">Instagram</a>
+        </div>
+        <div class="flex items-center gap-3">
+            <button onclick="openAdminLogin()" class="inline-flex border border-pink-500 px-3 md:px-4 py-2 rounded-full font-bold text-[10px] md:text-xs hover:bg-pink-500 transition">
+                MEMBER LOGIN
+            </button>
+            <button onclick="viewReserveList()" class="rock-gradient px-6 py-2 rounded-full font-bold text-sm hover:opacity-90 transition shadow-lg">
+                取り置きリスト
+            </button>
+        </div>
+    </nav>
+
+    <section class="relative h-screen flex items-center justify-center overflow-hidden">
+        <div class="absolute inset-0 z-0">
+            <img src="assets/photos/live/20250927-ppd-jmatsuri/nami.jpg" class="w-full h-full object-cover opacity-40 grayscale hover:grayscale-0 transition duration-700" alt="Hero Background">
+            <div class="absolute inset-0 bg-black bg-opacity-60"></div>
+        </div>
+        <div class="relative z-10 text-center px-4">
+            <img src="assets/logos/band-logo.jpg" class="w-40 h-40 md:w-56 md:h-56 mx-auto mb-6 rounded-full object-cover border-4 border-pink-500 shadow-2xl shadow-pink-500/30" alt="ping-pong-dash logo">
+            <h1 class="text-6xl md:text-9xl font-black italic tracking-tighter mb-4 animate-bounce">
+                <span class="text-transparent bg-clip-text rock-gradient">DASH TO THE FUTURE</span>
+            </h1>
+            <p class="text-xl md:text-2xl font-light tracking-widest opacity-80 mb-8">ping-pong-dash Official Website</p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="#live" class="border-2 border-white px-8 py-3 rounded-full font-bold hover:bg-white hover:text-black transition">VIEW TOUR DATES</a>
+                <a href="#instagram" class="bg-pink-600 px-8 py-3 rounded-full font-bold hover:bg-pink-500 transition flex items-center gap-2">
+                    <i data-lucide="instagram" class="w-5 h-5"></i> FOLLOW US
+                </a>
+            </div>
+        </div>
+        <div class="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce">
+            <i data-lucide="chevron-down" class="w-8 h-8 opacity-50"></i>
+        </div>
+    </section>
+
+    <section id="live" class="py-24 px-6 max-w-6xl mx-auto">
+        <h2 class="text-4xl font-black mb-12 flex items-center gap-4">
+            <span class="rock-gradient w-12 h-2 inline-block"></span> LIVE INFO
+        </h2>
+        <div id="live-list" class="space-y-6"></div>
+    </section>
+
+    <section id="members" class="py-24 bg-zinc-900 px-6">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-4xl font-black mb-12 text-right flex items-center justify-end gap-4">
+                MEMBERS <span class="rock-gradient w-12 h-2 inline-block"></span>
+            </h2>
+            <div id="member-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"></div>
+        </div>
+    </section>
+
+    <section id="gallery" class="py-24 px-6 max-w-7xl mx-auto">
+        <h2 class="text-4xl font-black mb-12 flex items-center gap-4">
+            <span class="rock-gradient w-12 h-2 inline-block"></span> PHOTO ALBUM
+        </h2>
+        <div id="album-list" class="grid grid-cols-1 md:grid-cols-2 gap-8"></div>
+    </section>
+
+    <section id="goods" class="py-24 bg-zinc-900 px-6">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-4xl font-black mb-12 text-center">OFFICIAL GOODS</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="glass p-4 rounded-3xl flex flex-col items-center">
+                    <div class="w-full aspect-square bg-zinc-800 rounded-2xl mb-4 overflow-hidden">
+                        <img src="https://placehold.co/400x400/222/white?text=Band+T-Shirt+Neon" class="w-full h-full object-cover" alt="T-Shirt">
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Neon Logo T-Shirt</h3>
+                    <p class="text-pink-500 font-black text-2xl mb-4">¥3,500</p>
+                    <button onclick="addToCart('Neon Logo T-Shirt', 3500)" class="w-full bg-white text-black py-3 rounded-full font-bold hover:bg-zinc-200 transition">ADD TO CART</button>
+                </div>
+                <div class="glass p-4 rounded-3xl flex flex-col items-center">
+                    <div class="w-full aspect-square bg-zinc-800 rounded-2xl mb-4 overflow-hidden">
+                        <img src="https://placehold.co/400x400/222/white?text=Live+Towel" class="w-full h-full object-cover" alt="Towel">
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Dash Sports Towel</h3>
+                    <p class="text-pink-500 font-black text-2xl mb-4">¥2,000</p>
+                    <button onclick="addToCart('Dash Sports Towel', 2000)" class="w-full bg-white text-black py-3 rounded-full font-bold hover:bg-zinc-200 transition">ADD TO CART</button>
+                </div>
+                <div class="glass p-4 rounded-3xl flex flex-col items-center">
+                    <div class="w-full aspect-square bg-zinc-800 rounded-2xl mb-4 overflow-hidden">
+                        <img src="https://placehold.co/400x400/222/white?text=Sticker+Set" class="w-full h-full object-cover" alt="Stickers">
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Member Sticker Set</h3>
+                    <p class="text-pink-500 font-black text-2xl mb-4">¥800</p>
+                    <button onclick="addToCart('Member Sticker Set', 800)" class="w-full bg-white text-black py-3 rounded-full font-bold hover:bg-zinc-200 transition">ADD TO CART</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="instagram" class="py-24 px-6 max-w-4xl mx-auto text-center">
+        <h2 class="text-4xl font-black mb-6 flex items-center justify-center gap-4 italic">
+            <i data-lucide="instagram" class="w-10 h-10"></i> Instagram
+        </h2>
+        <p class="text-lg opacity-70 mb-8">最新情報やライブの様子はInstagramで更新中。</p>
+        <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-3 rock-gradient px-10 py-4 rounded-full font-black text-lg hover:brightness-110 transition shadow-lg">
+            <i data-lucide="external-link" class="w-5 h-5"></i>
+            @pingpongdash_official
+        </a>
+    </section>
+
+    <footer class="py-12 border-t border-zinc-800 text-center">
+        <div class="flex justify-center gap-8 mb-8">
+            <a href="#" class="hover:text-pink-500 transition"><i data-lucide="twitter"></i></a>
+            <a href="#" class="hover:text-pink-500 transition"><i data-lucide="youtube"></i></a>
+            <a href="#" class="hover:text-pink-500 transition"><i data-lucide="facebook"></i></a>
+            <a href="#" class="hover:text-pink-500 transition"><i data-lucide="music"></i></a>
+        </div>
+        <p class="text-xs opacity-50">&copy; 2024 ping-pong-dash. All Rights Reserved.</p>
+    </footer>
+
+    <div id="member-detail-modal" class="fixed inset-0 z-[100] hidden overflow-y-auto bg-black bg-opacity-95 p-4 md:p-8">
+        <div class="max-w-6xl mx-auto">
+            <button onclick="closeMemberDetail()" class="mb-6 glass px-5 py-3 rounded-full inline-flex items-center gap-2 font-bold hover:border-pink-500 transition">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                MEMBERSへ戻る
+            </button>
+            <div class="grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-8 items-start">
+                <div class="relative overflow-hidden rounded-3xl aspect-[3/4]">
+                    <img id="member-detail-image" src="" class="w-full h-full object-cover" alt="">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-70"></div>
+                    <div class="absolute bottom-6 left-6 right-6">
+                        <p id="member-detail-role" class="text-pink-500 font-bold text-sm tracking-widest uppercase mb-2"></p>
+                        <h2 id="member-detail-name" class="text-6xl font-black italic"></h2>
+                    </div>
+                </div>
+                <div class="space-y-6">
+                    <section class="glass rounded-3xl p-6 md:p-8">
+                        <h3 class="text-2xl font-black mb-4">PROFILE</h3>
+                        <p id="member-detail-profile" class="opacity-80 leading-relaxed"></p>
+                    </section>
+                    <section class="glass rounded-3xl p-6 md:p-8">
+                        <h3 class="text-2xl font-black mb-4">OTHER BANDS / WORKS</h3>
+                        <div id="member-detail-activities" class="space-y-4"></div>
+                    </section>
+                    <section class="glass rounded-3xl p-6 md:p-8">
+                        <h3 class="text-2xl font-black mb-4">PERSONAL KEYWORDS</h3>
+                        <div id="member-detail-tags" class="flex flex-wrap gap-3"></div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="admin-login-modal" class="fixed inset-0 z-[120] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black bg-opacity-90 backdrop-blur-md" onclick="toggleModal('admin-login-modal')"></div>
+        <div class="relative glass max-w-sm w-full p-8 rounded-3xl border border-pink-500">
+            <h2 class="text-3xl font-black italic mb-6">MEMBER LOGIN</h2>
+            <form class="space-y-4" onsubmit="adminLogin(event)">
+                <div>
+                    <label class="text-xs uppercase font-bold opacity-60">Password</label>
+                    <input id="admin-password" type="password" required class="w-full bg-white/10 border border-white/20 p-3 rounded-xl mt-1 focus:border-pink-500 outline-none transition">
+                </div>
+                <p class="text-xs opacity-50">Demo password: ppd2026</p>
+                <button type="submit" class="w-full rock-gradient py-3 rounded-full font-black">LOGIN</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="admin-panel-modal" class="fixed inset-0 z-[120] hidden overflow-y-auto bg-black bg-opacity-95 p-4 md:p-8">
+        <div class="max-w-6xl mx-auto">
+            <div class="flex items-center justify-between gap-4 mb-8">
+                <div>
+                    <p class="text-pink-500 font-black text-sm tracking-widest">MEMBER ONLY</p>
+                    <h2 class="text-4xl md:text-6xl font-black italic">ADMIN PANEL</h2>
+                </div>
+                <button onclick="closeAdminPanel()" class="glass w-12 h-12 rounded-full flex items-center justify-center hover:border-pink-500 transition" aria-label="Close admin panel">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <section class="glass rounded-3xl p-6">
+                    <h3 class="text-2xl font-black mb-4">写真アップロード</h3>
+                    <form class="space-y-4" onsubmit="uploadAdminPhoto(event)">
+                        <div>
+                            <label class="text-xs uppercase font-bold opacity-60">Album</label>
+                            <select id="admin-photo-album" class="w-full bg-zinc-900 border border-white/20 p-3 rounded-xl mt-1"></select>
+                        </div>
+                        <div>
+                            <label class="text-xs uppercase font-bold opacity-60">Photo</label>
+                            <input id="admin-photo-file" type="file" accept="image/*" required class="w-full bg-white/10 border border-white/20 p-3 rounded-xl mt-1">
+                        </div>
+                        <input id="admin-photo-caption" type="text" placeholder="Caption" class="w-full bg-white/10 border border-white/20 p-3 rounded-xl">
+                        <button type="submit" class="w-full rock-gradient py-3 rounded-full font-black">追加</button>
+                    </form>
+                </section>
+
+                <section class="glass rounded-3xl p-6">
+                    <h3 class="text-2xl font-black mb-4">Live日程追加</h3>
+                    <form class="space-y-3" onsubmit="addAdminLive(event)">
+                        <input id="admin-live-title" type="text" placeholder="Live title" required class="w-full bg-white/10 border border-white/20 p-3 rounded-xl">
+                        <input id="admin-live-date" type="date" required class="w-full bg-white/10 border border-white/20 p-3 rounded-xl">
+                        <input id="admin-live-venue" type="text" placeholder="Venue" required class="w-full bg-white/10 border border-white/20 p-3 rounded-xl">
+                        <input id="admin-live-time" type="text" placeholder="OPEN 18:00 / START 18:30" class="w-full bg-white/10 border border-white/20 p-3 rounded-xl">
+                        <input id="admin-live-charge" type="text" placeholder="Charge" class="w-full bg-white/10 border border-white/20 p-3 rounded-xl">
+                        <textarea id="admin-live-info" placeholder="Live detail" rows="4" class="w-full bg-white/10 border border-white/20 p-3 rounded-xl"></textarea>
+                        <button type="submit" class="w-full rock-gradient py-3 rounded-full font-black">追加</button>
+                    </form>
+                </section>
+
+                <section class="glass rounded-3xl p-6">
+                    <h3 class="text-2xl font-black mb-4">プロフィール編集</h3>
+                    <form class="space-y-3" onsubmit="saveAdminProfile(event)">
+                        <select id="admin-member-select" onchange="loadAdminProfile()" class="w-full bg-zinc-900 border border-white/20 p-3 rounded-xl"></select>
+                        <input id="admin-member-role" type="text" placeholder="Role" class="w-full bg-white/10 border border-white/20 p-3 rounded-xl">
+                        <textarea id="admin-member-profile" placeholder="Profile" rows="5" class="w-full bg-white/10 border border-white/20 p-3 rounded-xl"></textarea>
+                        <textarea id="admin-member-activities" placeholder="Other bands / works. 1行に1件ずつ" rows="4" class="w-full bg-white/10 border border-white/20 p-3 rounded-xl"></textarea>
+                        <input id="admin-member-photo" type="file" accept="image/*" class="w-full bg-white/10 border border-white/20 p-3 rounded-xl">
+                        <button type="submit" class="w-full rock-gradient py-3 rounded-full font-black">保存</button>
+                    </form>
+                </section>
+            </div>
+            <p class="mt-6 text-xs opacity-50">この管理画面は静的サイト用の簡易版です。変更内容はこのブラウザのlocalStorageに保存されます。</p>
+        </div>
+    </div>
+
+    <div id="live-detail-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black bg-opacity-90 backdrop-blur-md" onclick="closeLiveDetail()"></div>
+        <div class="relative glass max-w-2xl w-full p-8 rounded-3xl shadow-2xl border-pink-500 border">
+            <button onclick="closeLiveDetail()" class="absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center hover:bg-white/10 transition" aria-label="Close live detail">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <p id="live-detail-date" class="text-pink-500 font-black text-sm tracking-widest mb-3"></p>
+            <h2 id="live-detail-title" class="text-4xl font-black italic mb-2"></h2>
+            <p id="live-detail-venue" class="text-lg opacity-70 mb-8"></p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                <div class="bg-white/5 rounded-2xl p-4">
+                    <p class="text-xs uppercase font-bold opacity-50 mb-1">OPEN / START</p>
+                    <p id="live-detail-time" class="font-bold"></p>
+                </div>
+                <div class="bg-white/5 rounded-2xl p-4">
+                    <p class="text-xs uppercase font-bold opacity-50 mb-1">CHARGE</p>
+                    <p id="live-detail-charge" class="font-bold"></p>
+                </div>
+            </div>
+            <p id="live-detail-info" class="opacity-80 leading-relaxed mb-8"></p>
+            <button id="live-detail-reserve" class="rock-gradient w-full py-4 rounded-full font-black text-lg hover:brightness-110 transition">取り置きリストに入れる</button>
+        </div>
+    </div>
+
+    <div id="ticket-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black bg-opacity-90 backdrop-blur-md" onclick="toggleModal('ticket-modal')"></div>
+        <div class="relative glass max-w-md w-full p-8 rounded-3xl shadow-2xl border-pink-500 border">
+            <h2 class="text-3xl font-black mb-4 italic">取り置きリスト</h2>
+            <div id="reserve-list" class="space-y-3 mb-6"></div>
+            <form id="reserve-form" class="space-y-4" onsubmit="submitReserve(event)">
+                <div>
+                    <label class="text-xs uppercase font-bold opacity-60">Full Name</label>
+                    <input type="text" placeholder="Your Name" required class="w-full bg-white/10 border border-white/20 p-3 rounded-xl mt-1 focus:border-pink-500 outline-none transition">
+                </div>
+                <div>
+                    <label class="text-xs uppercase font-bold opacity-60">Email Address</label>
+                    <input type="email" placeholder="email@example.com" required class="w-full bg-white/10 border border-white/20 p-3 rounded-xl mt-1 focus:border-pink-500 outline-none transition">
+                </div>
+                <button type="submit" class="w-full rock-gradient py-4 rounded-full font-black text-xl mt-4 shadow-lg hover:brightness-110 transition">取り置きを送信</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="album-modal" class="fixed inset-0 z-[105] hidden overflow-y-auto bg-black bg-opacity-95 p-4 md:p-8">
+        <div class="max-w-6xl mx-auto">
+            <div class="flex items-start justify-between gap-4 mb-8">
+                <div>
+                    <p id="album-meta" class="text-pink-500 font-black text-sm tracking-widest mb-2"></p>
+                    <h2 id="album-title" class="text-4xl md:text-6xl font-black italic"></h2>
+                </div>
+                <button onclick="closeAlbum()" class="glass w-12 h-12 rounded-full flex items-center justify-center hover:border-pink-500 transition" aria-label="Close album">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <div id="album-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+        </div>
+    </div>
+
+    <div id="photo-modal" class="fixed inset-0 z-[110] hidden flex items-center justify-center p-4 bg-black bg-opacity-95" onclick="closePhoto()">
+        <img id="modal-img" src="" class="max-w-full max-h-full rounded-lg shadow-2xl" alt="Large View" onclick="event.stopPropagation()">
+    </div>
+
+    <div id="cart-badge" class="fixed bottom-8 right-8 z-[90] hidden">
+        <button onclick="viewCart()" class="rock-gradient w-16 h-16 rounded-full shadow-2xl flex items-center justify-center hover-scale animate-pulse-neon">
+            <i data-lucide="shopping-cart" class="w-8 h-8"></i>
+            <span id="cart-count" class="absolute -top-1 -right-1 bg-white text-black font-bold text-xs w-6 h-6 rounded-full flex items-center justify-center">0</span>
+        </button>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        function toggleModal(id) {
+            const modal = document.getElementById(id);
+            modal.classList.toggle('hidden');
+            if (!modal.classList.contains('hidden')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        let memberData = {
+            nami: {
+                name: 'NAMi',
+                role: 'Guitar & Vocals',
+                image: 'assets/members/nami.jpg',
+                profile: 'ping-pong-dashのギターボーカル。鋭いギターリフとまっすぐ抜ける歌声で、バンドの衝動とメロディを前へ押し出す。ライブではフロアとの距離感を大事にしながら、楽曲の熱量を一気に上げる存在。',
+                activities: [
+                    { band: 'ソロ / 弾き語り', detail: 'アコースティック編成でのライブやデモ制作を中心に活動。ping-pong-dashとは違う言葉の温度感を出している。' },
+                    { band: 'サポートギター', detail: 'ガールズロック系イベントで他アーティストのサポートギターとしても参加。' }
+                ],
+                tags: ['Songwriting', 'Fuzz Guitar', 'Live Energy']
+            },
+            meri: {
+                name: 'MERi',
+                role: 'Guitar & Vocals',
+                image: 'assets/members/meri.jpg',
+                profile: 'ツインボーカルの片翼を担うギターボーカル。コードワークとコーラスで楽曲に奥行きを作り、時に前に出るメロディでバンドの景色を切り替える。',
+                activities: [
+                    { band: 'インディーポップユニット', detail: '別名義で柔らかいギターポップの楽曲制作に参加。コーラスアレンジも担当。' },
+                    { band: 'DJ / 選曲活動', detail: 'ライブハウスイベントでの転換DJやプレイリスト企画にも参加。' }
+                ],
+                tags: ['Harmony', 'Indie Pop', 'Arrangement']
+            },
+            miki: {
+                name: 'MiKi',
+                role: 'Bass & Vocals',
+                image: 'assets/members/miki.jpg',
+                profile: 'ベースボーカルとして低音と声の両方でバンドの中心を支える。跳ねるベースラインと芯のある歌で、ping-pong-dashのダンス感とロック感をつなぐ。',
+                activities: [
+                    { band: 'セッションベース', detail: 'ロック、ポップス、オルタナ系のセッションライブに参加。安定したグルーヴで楽曲を支える。' },
+                    { band: '宅録プロジェクト', detail: '自宅録音でベーストラックや仮歌の制作を行い、楽曲制作面でも活動。' }
+                ],
+                tags: ['Groove', 'Bassline', 'Home Recording']
+            },
+            rei: {
+                name: 'REi',
+                role: 'Drums',
+                image: 'assets/members/rei.jpg',
+                profile: 'ドラム担当。スピード感のあるビートとメリハリの強いフィルで、ライブ全体を駆動する。楽曲の展開に合わせたダイナミクスでバンドの爆発力を引き出す。',
+                activities: [
+                    { band: 'サポートドラム', detail: 'パンク、ポップロック系バンドのサポートドラマーとしてライブやレコーディングに参加。' },
+                    { band: 'リズムワークショップ', detail: '初心者向けのドラム練習会やリズムアンサンブル企画にも関わっている。' }
+                ],
+                tags: ['Power Beat', 'Punk Rock', 'Session Work']
+            }
+        };
+
+        function openMemberDetail(memberId) {
+            const member = memberData[memberId];
+            document.getElementById('member-detail-image').src = member.image;
+            document.getElementById('member-detail-image').alt = member.name;
+            document.getElementById('member-detail-name').innerText = member.name;
+            document.getElementById('member-detail-role').innerText = member.role;
+            document.getElementById('member-detail-profile').innerText = member.profile;
+            document.getElementById('member-detail-activities').innerHTML = member.activities.map(activity => `
+                <div class="border-l-4 border-pink-500 pl-4">
+                    <h4 class="font-black text-lg">${activity.band}</h4>
+                    <p class="opacity-70 leading-relaxed">${activity.detail}</p>
+                </div>
+            `).join('');
+            document.getElementById('member-detail-tags').innerHTML = member.tags.map(tag => `
+                <span class="border border-pink-500 text-pink-400 rounded-full px-4 py-2 text-sm font-bold">${tag}</span>
+            `).join('');
+            document.getElementById('member-detail-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            lucide.createIcons();
+        }
+
+        function closeMemberDetail() {
+            document.getElementById('member-detail-modal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        let liveData = {
+            shibuya: {
+                title: 'SHIBUYA CRASH 2024',
+                dateValue: '2024-06-15',
+                date: '2024.06.15 SUN',
+                venue: 'Shibuya CLUB QUATTRO',
+                time: 'OPEN 18:00 / START 18:30',
+                charge: '前売 ¥3,000 / 当日 ¥3,500 + 1D',
+                info: 'ping-pong-dashが渋谷で鳴らす初夏の爆音ナイト。取り置き希望の方はリストに追加して、お名前とメールアドレスを送信してください。'
+            },
+            osaka: {
+                title: 'OSAKA NIGHT DASH',
+                dateValue: '2024-07-02',
+                date: '2024.07.02 WED',
+                venue: 'Osaka BIGCAT',
+                time: 'OPEN 18:30 / START 19:00',
+                charge: '前売 ¥3,200 / 当日 ¥3,700 + 1D',
+                info: '大阪BIGCATでのスペシャルライブ。入場枠が少なくなっているため、来場予定の方は早めに取り置きリストへ追加してください。'
+            }
+        };
+
+        let reserveList = [];
+
+        function saveAdminData() {
+            localStorage.setItem('ppdMemberData', JSON.stringify(memberData));
+            localStorage.setItem('ppdLiveData', JSON.stringify(liveData));
+            localStorage.setItem('ppdAlbums', JSON.stringify(albums));
+        }
+
+        function loadAdminData() {
+            const savedMembers = localStorage.getItem('ppdMemberData');
+            const savedLives = localStorage.getItem('ppdLiveData');
+            const savedAlbums = localStorage.getItem('ppdAlbums');
+            if (savedMembers) memberData = JSON.parse(savedMembers);
+            if (savedLives) liveData = JSON.parse(savedLives);
+            if (savedAlbums) albums = JSON.parse(savedAlbums);
+        }
+
+        function formatLiveDate(dateValue) {
+            const date = new Date(`${dateValue}T00:00:00`);
+            const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+            return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')} ${days[date.getDay()]}`;
+        }
+
+        function renderLiveList() {
+            const list = document.getElementById('live-list');
+            const sortedLives = Object.entries(liveData).sort((a, b) => new Date(a[1].dateValue) - new Date(b[1].dateValue));
+            list.innerHTML = sortedLives.map(([liveId, live]) => {
+                const past = isPastLive(live);
+                const date = new Date(`${live.dateValue}T00:00:00`);
+                const monthDay = `${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
+                const day = live.date.split(' ').pop();
+                const action = past
+                    ? '<span class="text-xs px-3 py-1 border border-pink-500 text-pink-500 rounded-full">THANK YOU</span><button onclick="event.stopPropagation()" class="bg-zinc-700 text-zinc-300 px-8 py-3 rounded-full font-bold w-full md:w-auto cursor-not-allowed" disabled>THANK YOU</button>'
+                    : `<span class="text-xs px-3 py-1 border border-green-500 text-green-500 rounded-full">取り置き受付中</span><button onclick="event.stopPropagation(); addToReserve('${liveId}')" class="rock-gradient px-8 py-3 rounded-full font-bold w-full md:w-auto">リストに入れる</button>`;
+                return `
+                    <div onclick="openLiveDetail('${liveId}')" class="glass p-6 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-6 hover:border-pink-500 transition group cursor-pointer">
+                        <div class="flex items-center gap-8 w-full md:w-auto">
+                            <div class="text-center">
+                                <div class="text-pink-500 font-black text-2xl">${monthDay}</div>
+                                <div class="text-xs opacity-60">${day}</div>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold group-hover:text-pink-400 transition">${live.title}</h3>
+                                <p class="text-sm opacity-60">${live.venue}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4 w-full md:w-auto justify-end">${action}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderMemberGrid() {
+            const grid = document.getElementById('member-grid');
+            grid.innerHTML = Object.entries(memberData).map(([memberId, member]) => `
+                <button onclick="openMemberDetail('${memberId}')" class="group relative overflow-hidden rounded-3xl aspect-[3/4] hover-scale text-left">
+                    <img src="${member.image}" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition duration-500" alt="${member.name}">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80"></div>
+                    <div class="absolute bottom-6 left-6">
+                        <h3 class="text-2xl font-black italic">${member.name}</h3>
+                        <p class="text-pink-500 font-bold text-sm tracking-widest uppercase">${member.role}</p>
+                    </div>
+                </button>
+            `).join('');
+        }
+
+        function isPastLive(live) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const liveDate = new Date(`${live.dateValue}T00:00:00`);
+            return liveDate < today;
+        }
+
+        function openLiveDetail(liveId) {
+            const live = liveData[liveId];
+            const reserveButton = document.getElementById('live-detail-reserve');
+            document.getElementById('live-detail-date').innerText = live.date;
+            document.getElementById('live-detail-title').innerText = live.title;
+            document.getElementById('live-detail-venue').innerText = live.venue;
+            document.getElementById('live-detail-time').innerText = live.time;
+            document.getElementById('live-detail-charge').innerText = live.charge;
+            document.getElementById('live-detail-info').innerText = live.info;
+
+            if (isPastLive(live)) {
+                reserveButton.innerText = 'THANK YOU';
+                reserveButton.disabled = true;
+                reserveButton.onclick = null;
+                reserveButton.className = 'bg-zinc-700 text-zinc-300 w-full py-4 rounded-full font-black text-lg cursor-not-allowed';
+            } else {
+                reserveButton.innerText = '取り置きリストに入れる';
+                reserveButton.disabled = false;
+                reserveButton.onclick = () => addToReserve(liveId);
+                reserveButton.className = 'rock-gradient w-full py-4 rounded-full font-black text-lg hover:brightness-110 transition';
+            }
+
+            document.getElementById('live-detail-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLiveDetail() {
+            document.getElementById('live-detail-modal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        function addToReserve(liveId) {
+            const live = liveData[liveId];
+            if (isPastLive(live)) {
+                alert('終了したライブは取り置きできません。THANK YOU!');
+                return;
+            }
+
+            if (!reserveList.includes(liveId)) {
+                reserveList.push(liveId);
+            }
+
+            const feedback = document.createElement('div');
+            feedback.className = 'fixed top-24 left-1/2 -translate-x-1/2 bg-pink-600 text-white px-6 py-2 rounded-full font-bold z-[120] animate-bounce';
+            feedback.innerText = `${live.title} を取り置きリストに追加しました`;
+            document.body.appendChild(feedback);
+            setTimeout(() => feedback.remove(), 2000);
+        }
+
+        function viewReserveList() {
+            renderReserveList();
+            document.getElementById('ticket-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function renderReserveList() {
+            const list = document.getElementById('reserve-list');
+            const form = document.getElementById('reserve-form');
+
+            if (reserveList.length === 0) {
+                list.innerHTML = '<p class="bg-white/5 rounded-2xl p-4 text-sm opacity-70">まだ取り置きリストにライブがありません。LIVE INFOから追加してください。</p>';
+                form.classList.add('hidden');
+                return;
+            }
+
+            form.classList.remove('hidden');
+            list.innerHTML = reserveList.map(liveId => {
+                const live = liveData[liveId];
+                return `
+                    <div class="bg-white/5 rounded-2xl p-4 flex justify-between gap-4">
+                        <div>
+                            <p class="font-bold">${live.title}</p>
+                            <p class="text-xs opacity-60">${live.date} / ${live.venue}</p>
+                        </div>
+                        <button onclick="removeFromReserve('${liveId}')" class="text-xs text-pink-500 font-bold">削除</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function removeFromReserve(liveId) {
+            reserveList = reserveList.filter(id => id !== liveId);
+            renderReserveList();
+        }
+
+        function submitReserve(event) {
+            event.preventDefault();
+            const shows = reserveList.map(liveId => liveData[liveId].title).join(' / ');
+            alert(`${shows} の取り置きを受け付けました。確認メールをご確認ください。`);
+            reserveList = [];
+            renderReserveList();
+            toggleModal('ticket-modal');
+        }
+
+        let albums = {
+            jmatsuri20250927: {
+                title: 'PPD J祭',
+                meta: '2025.09.27 / Live Event',
+                photos: [
+                    { src: 'assets/photos/live/20250927-ppd-jmatsuri/nami.jpg', alt: 'PPD J祭 NAMi' },
+                    { src: 'assets/photos/live/20250927-ppd-jmatsuri/meri.jpg', alt: 'PPD J祭 MERi' },
+                    { src: 'assets/photos/live/20250927-ppd-jmatsuri/miki.jpg', alt: 'PPD J祭 MiKi' },
+                    { src: 'assets/photos/live/20250927-ppd-jmatsuri/rei.jpg', alt: 'PPD J祭 REi' }
+                ]
+            },
+            offshot: {
+                title: 'OFFSHOT',
+                meta: 'LIVE以外の写真',
+                photos: []
+            }
+        };
+
+        function renderAlbumCards() {
+            const list = document.getElementById('album-list');
+            list.innerHTML = Object.entries(albums).map(([albumId, album]) => {
+                const cover = album.photos[0]?.src || 'assets/logos/band-logo.jpg';
+                const count = album.photos.length > 0 ? `${album.photos.length} Photos` : 'Coming Soon';
+                return `
+                    <button onclick="openAlbum('${albumId}')" class="group text-left glass overflow-hidden rounded-3xl hover:border-pink-500 transition">
+                        <div class="relative h-72 overflow-hidden">
+                            <img src="${cover}" class="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition duration-500" alt="${album.title}">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>
+                            <div class="absolute bottom-6 left-6 right-6">
+                                <p class="text-pink-500 font-black text-sm tracking-widest mb-2">${album.meta}</p>
+                                <h3 class="text-3xl font-black italic">${album.title}</h3>
+                            </div>
+                        </div>
+                        <div class="p-6 flex items-center justify-between">
+                            <span class="text-sm opacity-70">${count}</span>
+                            <span class="flex items-center gap-2 font-bold text-pink-500">VIEW ALBUM <i data-lucide="arrow-right" class="w-4 h-4"></i></span>
+                        </div>
+                    </button>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        function refreshSite() {
+            renderLiveList();
+            renderMemberGrid();
+            renderAlbumCards();
+            initAdminControls();
+            lucide.createIcons();
+        }
+
+        function initAdminControls() {
+            const albumSelect = document.getElementById('admin-photo-album');
+            const memberSelect = document.getElementById('admin-member-select');
+            albumSelect.innerHTML = Object.entries(albums).map(([id, album]) => `<option value="${id}">${album.title}</option>`).join('');
+            memberSelect.innerHTML = Object.entries(memberData).map(([id, member]) => `<option value="${id}">${member.name}</option>`).join('');
+            loadAdminProfile();
+        }
+
+        function openAdminLogin() {
+            if (localStorage.getItem('ppdAdminLoggedIn') === 'true') {
+                document.getElementById('admin-panel-modal').classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+                return;
+            }
+            document.getElementById('admin-login-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function adminLogin(event) {
+            event.preventDefault();
+            const password = document.getElementById('admin-password').value;
+            if (password !== 'ppd2026') {
+                alert('パスワードが違います。');
+                return;
+            }
+            localStorage.setItem('ppdAdminLoggedIn', 'true');
+            document.getElementById('admin-login-modal').classList.add('hidden');
+            document.getElementById('admin-panel-modal').classList.remove('hidden');
+            document.getElementById('admin-password').value = '';
+            refreshSite();
+        }
+
+        function closeAdminPanel() {
+            document.getElementById('admin-panel-modal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        function readImageFile(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function uploadAdminPhoto(event) {
+            event.preventDefault();
+            const albumId = document.getElementById('admin-photo-album').value;
+            const file = document.getElementById('admin-photo-file').files[0];
+            const caption = document.getElementById('admin-photo-caption').value || albums[albumId].title;
+            const src = await readImageFile(file);
+            albums[albumId].photos.push({ src, alt: caption });
+            saveAdminData();
+            refreshSite();
+            event.target.reset();
+            alert('写真を追加しました。');
+        }
+
+        function addAdminLive(event) {
+            event.preventDefault();
+            const dateValue = document.getElementById('admin-live-date').value;
+            const id = `live${Date.now()}`;
+            liveData[id] = {
+                title: document.getElementById('admin-live-title').value,
+                dateValue,
+                date: formatLiveDate(dateValue),
+                venue: document.getElementById('admin-live-venue').value,
+                time: document.getElementById('admin-live-time').value || 'OPEN / START TBA',
+                charge: document.getElementById('admin-live-charge').value || 'TBA',
+                info: document.getElementById('admin-live-info').value || '詳細は後日発表します。'
+            };
+            albums[id] = {
+                title: liveData[id].title,
+                meta: `${liveData[id].date} / ${liveData[id].venue}`,
+                photos: []
+            };
+            saveAdminData();
+            refreshSite();
+            event.target.reset();
+            alert('Live日程を追加しました。');
+        }
+
+        function loadAdminProfile() {
+            const memberId = document.getElementById('admin-member-select')?.value;
+            if (!memberId || !memberData[memberId]) return;
+            const member = memberData[memberId];
+            document.getElementById('admin-member-role').value = member.role;
+            document.getElementById('admin-member-profile').value = member.profile;
+            document.getElementById('admin-member-activities').value = member.activities.map(item => `${item.band}: ${item.detail}`).join('\n');
+        }
+
+        async function saveAdminProfile(event) {
+            event.preventDefault();
+            const memberId = document.getElementById('admin-member-select').value;
+            const member = memberData[memberId];
+            const file = document.getElementById('admin-member-photo').files[0];
+            member.role = document.getElementById('admin-member-role').value;
+            member.profile = document.getElementById('admin-member-profile').value;
+            member.activities = document.getElementById('admin-member-activities').value.split('\n').filter(Boolean).map(line => {
+                const [band, ...detail] = line.split(':');
+                return { band: band.trim(), detail: detail.join(':').trim() || '活動内容を編集中です。' };
+            });
+            if (file) {
+                member.image = await readImageFile(file);
+            }
+            saveAdminData();
+            refreshSite();
+            alert('プロフィールを保存しました。');
+        }
+
+        function openAlbum(albumId) {
+            const album = albums[albumId];
+            const modal = document.getElementById('album-modal');
+            const grid = document.getElementById('album-grid');
+
+            document.getElementById('album-title').innerText = album.title;
+            document.getElementById('album-meta').innerText = album.meta;
+            if (album.photos.length === 0) {
+                grid.innerHTML = '<div class="glass rounded-3xl p-8 text-center opacity-70 lg:col-span-4">まだ写真がありません。LIVE外の写真は assets/photos/offshot/ にまとめて追加できます。</div>';
+            } else {
+                grid.innerHTML = album.photos.map(photo => `
+                <button class="group relative h-72 overflow-hidden rounded-2xl bg-zinc-900" onclick="viewPhoto('${photo.src}')">
+                    <img src="${photo.src}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="${photo.alt}">
+                    <div class="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition"></div>
+                    <i data-lucide="maximize-2" class="absolute bottom-4 right-4 w-6 h-6 opacity-0 group-hover:opacity-100 transition"></i>
+                </button>
+                `).join('');
+            }
+
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            lucide.createIcons();
+        }
+
+        function closeAlbum() {
+            document.getElementById('album-modal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        function viewPhoto(src) {
+            const modal = document.getElementById('photo-modal');
+            const img = document.getElementById('modal-img');
+            img.src = src;
+            modal.classList.remove('hidden');
+        }
+
+        function closePhoto() {
+            document.getElementById('photo-modal').classList.add('hidden');
+        }
+
+        let cart = [];
+        function addToCart(name, price) {
+            cart.push({ name, price });
+            updateCartUI();
+
+            const feedback = document.createElement('div');
+            feedback.className = 'fixed top-24 left-1/2 -translate-x-1/2 bg-green-500 text-white px-6 py-2 rounded-full font-bold z-[120] animate-bounce';
+            feedback.innerText = `${name} added to cart!`;
+            document.body.appendChild(feedback);
+            setTimeout(() => feedback.remove(), 2000);
+        }
+
+        function updateCartUI() {
+            const badge = document.getElementById('cart-badge');
+            const count = document.getElementById('cart-count');
+            if (cart.length > 0) {
+                badge.classList.remove('hidden');
+                count.innerText = cart.length;
+            }
+        }
+
+        function viewCart() {
+            const total = cart.reduce((sum, item) => sum + item.price, 0);
+            const itemsList = cart.map(i => i.name).join('\n- ');
+            const msg = `Shopping Cart Items:\n- ${itemsList}\n\nTotal: ¥${total}\n\n決済画面へ進みますか？`;
+            if (confirm(msg)) {
+                alert('決済処理を開始します (Mock処理)');
+                cart = [];
+                updateCartUI();
+                document.getElementById('cart-badge').classList.add('hidden');
+            }
+        }
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                if (this.getAttribute('href') === '#') return;
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        loadAdminData();
+        refreshSite();
+    </script>
+</body>
+</html>
