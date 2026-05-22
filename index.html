@@ -243,8 +243,8 @@
                         <div id="member-detail-activities" class="space-y-4"></div>
                     </section>
                     <section class="glass rounded-3xl p-6 md:p-8">
-                        <h3 class="text-2xl font-black mb-4">PERSONAL KEYWORDS</h3>
-                        <div id="member-detail-tags" class="flex flex-wrap gap-3"></div>
+                        <h3 class="text-2xl font-black mb-4">EQUIPMENT</h3>
+                        <div id="member-detail-equipment" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
                     </section>
                 </div>
             </div>
@@ -364,7 +364,11 @@
                         <label class="block text-xs uppercase font-bold opacity-60">アナザーバンド</label>
                         <div id="admin-activity-image-list" class="space-y-3"></div>
                         <button type="button" onclick="addAdminActivityEditor()" class="w-full border border-white/20 py-3 rounded-full font-black hover:border-pink-500 transition">アナザーバンドを追加</button>
+                        <label class="block text-xs uppercase font-bold opacity-60">使用機材</label>
+                        <div id="admin-equipment-list" class="space-y-3"></div>
+                        <button type="button" onclick="addAdminEquipmentEditor()" class="w-full border border-white/20 py-3 rounded-full font-black hover:border-pink-500 transition">使用機材を追加</button>
                         <input id="admin-activity-image-file" type="file" accept="image/*" class="hidden" onchange="previewAdminActivityImage(event)">
+                        <input id="admin-equipment-image-file" type="file" accept="image/*" class="hidden" onchange="previewAdminEquipmentImage(event)">
                         <button type="submit" class="w-full rock-gradient py-3 rounded-full font-black">保存</button>
                     </form>
                 </section>
@@ -499,8 +503,7 @@
                 activities: [
                     { band: 'ソロ / 弾き語り', detail: 'アコースティック編成でのライブやデモ制作を中心に活動。ping-pong-dashとは違う言葉の温度感を出している。' },
                     { band: 'サポートギター', detail: 'ガールズロック系イベントで他アーティストのサポートギターとしても参加。' }
-                ],
-                tags: ['Songwriting', 'Fuzz Guitar', 'Live Energy']
+                ]
             },
             meri: {
                 name: 'MERi',
@@ -512,8 +515,7 @@
                 activities: [
                     { band: 'インディーポップユニット', detail: '別名義で柔らかいギターポップの楽曲制作に参加。コーラスアレンジも担当。' },
                     { band: 'DJ / 選曲活動', detail: 'ライブハウスイベントでの転換DJやプレイリスト企画にも参加。' }
-                ],
-                tags: ['Harmony', 'Indie Pop', 'Arrangement']
+                ]
             },
             miki: {
                 name: 'MiKi',
@@ -526,8 +528,7 @@
                 activities: [
                     { band: 'セッションベース', detail: 'ロック、ポップス、オルタナ系のセッションライブに参加。安定したグルーヴで楽曲を支える。' },
                     { band: '宅録プロジェクト', detail: '自宅録音でベーストラックや仮歌の制作を行い、楽曲制作面でも活動。' }
-                ],
-                tags: ['Groove', 'Bassline', 'Home Recording']
+                ]
             },
             rei: {
                 name: 'REi',
@@ -540,8 +541,7 @@
                 activities: [
                     { band: 'サポートドラム', detail: 'パンク、ポップロック系バンドのサポートドラマーとしてライブやレコーディングに参加。' },
                     { band: 'リズムワークショップ', detail: '初心者向けのドラム練習会やリズムアンサンブル企画にも関わっている。' }
-                ],
-                tags: ['Power Beat', 'Punk Rock', 'Session Work']
+                ]
             }
         };
 
@@ -599,8 +599,14 @@
                     </div>
                 </div>
             `).join('');
-            document.getElementById('member-detail-tags').innerHTML = member.tags.map(tag => `
-                <span class="border rounded-full px-4 py-2 text-sm font-bold" style="border-color: ${theme.color}; color: ${theme.color}; background: ${theme.colorSoft};">${tag}</span>
+            document.getElementById('member-detail-equipment').innerHTML = (member.equipment || []).map(item => `
+                <div class="overflow-hidden rounded-2xl bg-white/5 border border-white/10">
+                    ${item.image ? `<img src="${item.image}" class="w-full aspect-[4/3] object-cover bg-zinc-900" alt="${item.name}">` : ''}
+                    <div class="p-4">
+                        <h4 class="font-black text-lg" style="color: ${theme.color};">${item.name}</h4>
+                        <p class="text-sm opacity-70 leading-relaxed">${item.detail}</p>
+                    </div>
+                </div>
             `).join('');
             document.getElementById('member-detail-modal').classList.remove('hidden');
             document.body.style.overflow = 'hidden';
@@ -1199,9 +1205,11 @@
             document.getElementById('admin-member-photo-preview').src = member.image;
             document.getElementById('admin-member-photo-preview').style.objectPosition = member.imagePosition || (memberId === 'rei' ? 'right center' : 'center center');
             renderAdminActivityImageControls(member);
+            renderAdminEquipmentControls(member);
         }
 
         let adminActivityImageTargetIndex = 0;
+        let adminEquipmentImageTargetIndex = 0;
 
         function parseAdminActivities() {
             return Array.from(document.querySelectorAll('.admin-activity-editor')).map((editor, index) => {
@@ -1213,6 +1221,21 @@
                 return {
                     band: band || `Another band ${index + 1}`,
                     detail: detail || '活動内容を編集中です。',
+                    image
+                };
+            }).filter(Boolean);
+        }
+
+        function parseAdminEquipment() {
+            return Array.from(document.querySelectorAll('.admin-equipment-editor')).map((editor, index) => {
+                const name = editor.querySelector('.admin-equipment-name')?.value.trim() || '';
+                const detail = editor.querySelector('.admin-equipment-detail')?.value.trim() || '';
+                const image = editor.querySelector('.admin-equipment-image-preview')?.getAttribute('src') || '';
+
+                if (!name && !detail && !image) return null;
+                return {
+                    name: name || `Equipment ${index + 1}`,
+                    detail: detail || '使用機材の説明を編集中です。',
                     image
                 };
             }).filter(Boolean);
@@ -1266,6 +1289,44 @@
             `;
         }
 
+        function addAdminEquipmentEditor(equipment = {}) {
+            const list = document.getElementById('admin-equipment-list');
+            if (!list) return;
+
+            const index = list.querySelectorAll('.admin-equipment-editor').length;
+            list.insertAdjacentHTML('beforeend', getAdminEquipmentEditorHtml(equipment, index));
+            lucide.createIcons();
+        }
+
+        function getAdminEquipmentEditorHtml(equipment, index) {
+            const name = escapeAdminField(equipment.name || '');
+            const detail = escapeAdminField(equipment.detail || '');
+            const image = escapeAdminField(equipment.image || '');
+
+            return `
+                <div class="admin-equipment-editor bg-white/5 rounded-2xl p-3 border border-white/10 space-y-3" data-equipment-index="${index}">
+                    <div class="grid grid-cols-[7rem_1fr] gap-3 items-start">
+                        <button type="button" onclick="selectAdminEquipmentImage(${index})" class="group relative overflow-hidden rounded-xl bg-zinc-900 aspect-square border border-white/10">
+                            <img id="admin-equipment-image-preview-${index}" src="${image}" class="admin-equipment-image-preview w-full h-full object-cover opacity-80 group-hover:scale-105 transition duration-500" alt="${name || 'Equipment'} image">
+                            <div class="absolute inset-0 bg-black/35 group-hover:bg-black/20 transition"></div>
+                            <i data-lucide="image-plus" class="absolute left-1/2 top-1/2 w-6 h-6 -translate-x-1/2 -translate-y-1/2"></i>
+                        </button>
+                        <div class="min-w-0 space-y-2">
+                            <label class="block text-xs uppercase font-bold opacity-60">機材名</label>
+                            <input type="text" class="admin-equipment-name w-full bg-white/10 border border-white/20 p-3 rounded-xl" placeholder="Equipment name" value="${name}">
+                        </div>
+                    </div>
+                    <label class="block text-xs uppercase font-bold opacity-60">説明</label>
+                    <textarea class="admin-equipment-detail w-full bg-white/10 border border-white/20 p-3 rounded-xl" rows="3" placeholder="Equipment detail">${detail}</textarea>
+                    <div class="flex flex-wrap gap-2">
+                        <button type="button" onclick="selectAdminEquipmentImage(${index})" class="border border-white/20 px-3 py-2 rounded-full text-xs font-bold hover:border-pink-500 transition">画像を変更</button>
+                        <button type="button" onclick="clearAdminEquipmentImage(${index})" class="border border-white/20 px-3 py-2 rounded-full text-xs font-bold hover:border-pink-500 transition">画像を削除</button>
+                        <button type="button" onclick="removeAdminEquipmentEditor(${index})" class="border border-red-500/50 text-red-300 px-3 py-2 rounded-full text-xs font-bold hover:bg-red-500/10 transition">機材を削除</button>
+                    </div>
+                </div>
+            `;
+        }
+
         function renderAdminActivityImageControls(member) {
             const list = document.getElementById('admin-activity-image-list');
             if (!list) return;
@@ -1281,10 +1342,35 @@
             lucide.createIcons();
         }
 
+        function renderAdminEquipmentControls(member) {
+            const list = document.getElementById('admin-equipment-list');
+            if (!list) return;
+
+            const equipment = member?.equipment || [];
+            if (equipment.length === 0) {
+                list.innerHTML = '';
+                addAdminEquipmentEditor();
+                return;
+            }
+
+            list.innerHTML = equipment.map((item, index) => getAdminEquipmentEditorHtml(item, index)).join('');
+            lucide.createIcons();
+        }
+
         function refreshAdminActivityEditorIndexes() {
             document.querySelectorAll('.admin-activity-editor').forEach((editor, index) => {
                 editor.dataset.activityIndex = index;
                 editor.querySelector('.admin-activity-image-preview').id = `admin-activity-image-preview-${index}`;
+                editor.querySelectorAll('button').forEach(button => {
+                    button.setAttribute('onclick', button.getAttribute('onclick').replace(/\(\d+\)/, `(${index})`));
+                });
+            });
+        }
+
+        function refreshAdminEquipmentEditorIndexes() {
+            document.querySelectorAll('.admin-equipment-editor').forEach((editor, index) => {
+                editor.dataset.equipmentIndex = index;
+                editor.querySelector('.admin-equipment-image-preview').id = `admin-equipment-image-preview-${index}`;
                 editor.querySelectorAll('button').forEach(button => {
                     button.setAttribute('onclick', button.getAttribute('onclick').replace(/\(\d+\)/, `(${index})`));
                 });
@@ -1296,9 +1382,19 @@
             document.getElementById('admin-activity-image-file').click();
         }
 
+        function selectAdminEquipmentImage(index) {
+            adminEquipmentImageTargetIndex = index;
+            document.getElementById('admin-equipment-image-file').click();
+        }
+
         function removeAdminActivityEditor(index) {
             document.querySelector(`[data-activity-index="${index}"]`)?.remove();
             refreshAdminActivityEditorIndexes();
+        }
+
+        function removeAdminEquipmentEditor(index) {
+            document.querySelector(`[data-equipment-index="${index}"]`)?.remove();
+            refreshAdminEquipmentEditorIndexes();
         }
 
         async function previewAdminMemberPhoto(event) {
@@ -1317,10 +1413,25 @@
             event.target.value = '';
         }
 
+        async function previewAdminEquipmentImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const preview = document.getElementById(`admin-equipment-image-preview-${adminEquipmentImageTargetIndex}`);
+            if (preview) preview.src = await resizeImageFile(file, 1200, 0.8);
+            event.target.value = '';
+        }
+
         function clearAdminActivityImage(index) {
             const preview = document.getElementById(`admin-activity-image-preview-${index}`);
             if (preview) preview.src = '';
             document.getElementById('admin-activity-image-file').value = '';
+        }
+
+        function clearAdminEquipmentImage(index) {
+            const preview = document.getElementById(`admin-equipment-image-preview-${index}`);
+            if (preview) preview.src = '';
+            document.getElementById('admin-equipment-image-file').value = '';
         }
 
         async function saveAdminProfile(event) {
@@ -1334,12 +1445,17 @@
                 ...activity,
                 image: document.getElementById(`admin-activity-image-preview-${index}`)?.getAttribute('src') || ''
             }));
+            member.equipment = parseAdminEquipment().map((item, index) => ({
+                ...item,
+                image: document.getElementById(`admin-equipment-image-preview-${index}`)?.getAttribute('src') || ''
+            }));
             if (file) {
                 member.image = await resizeImageFile(file);
             }
             saveAdminData();
             refreshSite();
             renderAdminActivityImageControls(member);
+            renderAdminEquipmentControls(member);
             alert('プロフィールを保存しました。');
         }
 
