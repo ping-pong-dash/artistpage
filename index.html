@@ -349,7 +349,7 @@
 
                 <section class="glass rounded-3xl p-6">
                     <h3 class="text-2xl font-black mb-4">プロフィール編集</h3>
-                    <form class="space-y-3" onsubmit="saveAdminProfile(event)">
+                    <form class="space-y-3" onsubmit="saveAdminProfile(event, { auto: true })" oninput="scheduleAdminProfileAutosave()">
                         <label class="block text-xs uppercase font-bold opacity-60">メンバー</label>
                         <div id="admin-member-tabs" class="grid grid-cols-2 sm:grid-cols-4 gap-2"></div>
                         <label class="block text-xs uppercase font-bold opacity-60">メンバー写真</label>
@@ -377,7 +377,7 @@
                         <button type="button" onclick="addAdminEquipmentEditor()" class="w-full border border-white/20 py-3 rounded-full font-black hover:border-pink-500 transition">使用機材を追加</button>
                         <input id="admin-activity-image-file" type="file" accept="image/*" class="hidden" onchange="previewAdminActivityImage(event)">
                         <input id="admin-equipment-image-file" type="file" accept="image/*" class="hidden" onchange="previewAdminEquipmentImage(event)">
-                        <button type="submit" class="w-full rock-gradient py-3 rounded-full font-black">保存</button>
+                        <div class="border border-green-500/50 text-green-300 py-3 rounded-full font-black text-center">自動保存</div>
                     </form>
                 </section>
             </div>
@@ -865,7 +865,7 @@
             const panels = document.getElementById('admin-tab-panels');
             const photoSection = document.querySelector('form[onsubmit="uploadAdminPhoto(event)"]')?.closest('section');
             const liveSection = document.querySelector('form[onsubmit="saveAdminLive(event)"]')?.closest('section');
-            const memberSection = document.querySelector('form[onsubmit="saveAdminProfile(event)"]')?.closest('section');
+            const memberSection = document.getElementById('admin-member-tabs')?.closest('section');
 
             if (photoSection) photoSection.id = 'admin-tab-photos';
             if (liveSection) {
@@ -1279,6 +1279,7 @@
         }
 
         let currentAdminMemberId = 'nami';
+        let adminProfileAutosaveTimer = null;
 
         function renderAdminMemberTabs() {
             const tabs = document.getElementById('admin-member-tabs');
@@ -1303,6 +1304,13 @@
             currentAdminMemberId = memberId;
             renderAdminMemberTabs();
             loadAdminProfile();
+        }
+
+        function scheduleAdminProfileAutosave() {
+            clearTimeout(adminProfileAutosaveTimer);
+            adminProfileAutosaveTimer = setTimeout(() => {
+                saveAdminProfile(null, { auto: true });
+            }, 350);
         }
 
         function loadAdminProfile() {
@@ -1350,13 +1358,14 @@
             }).filter(Boolean);
         }
 
-        function addAdminActivityEditor(activity = {}) {
+        function addAdminActivityEditor(activity = {}, autoSave = true) {
             const list = document.getElementById('admin-activity-image-list');
             if (!list) return;
 
             const index = list.querySelectorAll('.admin-activity-editor').length;
             list.insertAdjacentHTML('beforeend', getAdminActivityEditorHtml(activity, index));
             lucide.createIcons();
+            if (autoSave) scheduleAdminProfileAutosave();
         }
 
         function escapeAdminField(value = '') {
@@ -1398,13 +1407,14 @@
             `;
         }
 
-        function addAdminEquipmentEditor(equipment = {}) {
+        function addAdminEquipmentEditor(equipment = {}, autoSave = true) {
             const list = document.getElementById('admin-equipment-list');
             if (!list) return;
 
             const index = list.querySelectorAll('.admin-equipment-editor').length;
             list.insertAdjacentHTML('beforeend', getAdminEquipmentEditorHtml(equipment, index));
             lucide.createIcons();
+            if (autoSave) scheduleAdminProfileAutosave();
         }
 
         function getAdminEquipmentEditorHtml(equipment, index) {
@@ -1443,7 +1453,7 @@
             const activities = member?.activities || [];
             if (activities.length === 0) {
                 list.innerHTML = '';
-                addAdminActivityEditor();
+                addAdminActivityEditor({}, false);
                 return;
             }
 
@@ -1458,7 +1468,7 @@
             const equipment = member?.equipment || [];
             if (equipment.length === 0) {
                 list.innerHTML = '';
-                addAdminEquipmentEditor();
+                addAdminEquipmentEditor({}, false);
                 return;
             }
 
@@ -1500,12 +1510,14 @@
             if (!await showConfirm('このアナザーバンドのセットを削除しますか？')) return;
             document.querySelector(`[data-activity-index="${index}"]`)?.remove();
             refreshAdminActivityEditorIndexes();
+            scheduleAdminProfileAutosave();
         }
 
         async function removeAdminEquipmentEditor(index) {
             if (!await showConfirm('この機材を削除しますか？')) return;
             document.querySelector(`[data-equipment-index="${index}"]`)?.remove();
             refreshAdminEquipmentEditorIndexes();
+            scheduleAdminProfileAutosave();
         }
 
         async function previewAdminMemberPhoto(event) {
@@ -1513,6 +1525,7 @@
             if (!file) return;
 
             document.getElementById('admin-member-photo-preview').src = await resizeImageFile(file);
+            await saveAdminProfile(null, { auto: true });
         }
 
         async function previewAdminActivityImage(event) {
@@ -1522,6 +1535,7 @@
             const preview = document.getElementById(`admin-activity-image-preview-${adminActivityImageTargetIndex}`);
             if (preview) preview.src = await resizeImageFile(file, 1200, 0.8);
             event.target.value = '';
+            await saveAdminProfile(null, { auto: true });
         }
 
         async function previewAdminEquipmentImage(event) {
@@ -1531,6 +1545,7 @@
             const preview = document.getElementById(`admin-equipment-image-preview-${adminEquipmentImageTargetIndex}`);
             if (preview) preview.src = await resizeImageFile(file, 1200, 0.8);
             event.target.value = '';
+            await saveAdminProfile(null, { auto: true });
         }
 
         async function clearAdminActivityImage(index) {
@@ -1538,6 +1553,7 @@
             const preview = document.getElementById(`admin-activity-image-preview-${index}`);
             if (preview) preview.src = '';
             document.getElementById('admin-activity-image-file').value = '';
+            scheduleAdminProfileAutosave();
         }
 
         async function clearAdminEquipmentImage(index) {
@@ -1545,10 +1561,12 @@
             const preview = document.getElementById(`admin-equipment-image-preview-${index}`);
             if (preview) preview.src = '';
             document.getElementById('admin-equipment-image-file').value = '';
+            scheduleAdminProfileAutosave();
         }
 
-        async function saveAdminProfile(event) {
-            event.preventDefault();
+        async function saveAdminProfile(event = null, options = {}) {
+            if (event) event.preventDefault();
+            clearTimeout(adminProfileAutosaveTimer);
             const memberId = currentAdminMemberId;
             const member = memberData[memberId];
             const file = document.getElementById('admin-member-photo').files[0];
@@ -1564,12 +1582,15 @@
             }));
             if (file) {
                 member.image = await resizeImageFile(file);
+                document.getElementById('admin-member-photo').value = '';
             }
             saveAdminData();
-            refreshSite();
-            renderAdminActivityImageControls(member);
-            renderAdminEquipmentControls(member);
-            alert('プロフィールを保存しました。');
+            renderMemberGrid();
+            if (!options.auto) {
+                renderAdminActivityImageControls(member);
+                renderAdminEquipmentControls(member);
+                alert('プロフィールを保存しました。');
+            }
         }
 
         function openAlbum(albumId) {
