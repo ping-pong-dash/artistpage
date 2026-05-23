@@ -297,6 +297,14 @@
                         <textarea id="admin-photo-caption" rows="3" placeholder="Comment (optional)" class="w-full bg-white/10 border border-white/20 p-3 rounded-xl"></textarea>
                         <button type="submit" class="w-full rock-gradient py-3 rounded-full font-black">追加</button>
                     </form>
+                    <form class="border-t border-white/10 mt-8 pt-6 space-y-3" onsubmit="createAdminAlbum(event)">
+                        <h4 class="text-xl font-black">アルバム作成</h4>
+                        <label class="block text-xs uppercase font-bold opacity-60">アルバム名</label>
+                        <input id="admin-album-title" type="text" placeholder="Album title" required class="w-full bg-white/10 border border-white/20 p-3 rounded-xl">
+                        <label class="block text-xs uppercase font-bold opacity-60">説明 / 日付</label>
+                        <input id="admin-album-meta" type="text" placeholder="2026.05.23 / Offshot" class="w-full bg-white/10 border border-white/20 p-3 rounded-xl">
+                        <button type="submit" class="w-full border border-white/20 py-3 rounded-full font-black hover:border-pink-500 transition">アルバムを追加</button>
+                    </form>
                     <div class="border-t border-white/10 mt-8 pt-6">
                         <h4 class="text-xl font-black mb-4">アルバム内の写真</h4>
                         <div id="admin-photo-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
@@ -874,6 +882,39 @@
             if (tabName === 'photos') {
                 renderAdminPhotoList();
             }
+        }
+
+        function createAdminAlbum(event) {
+            event.preventDefault();
+
+            const titleInput = document.getElementById('admin-album-title');
+            const metaInput = document.getElementById('admin-album-meta');
+            const title = titleInput.value.trim();
+            if (!title) return;
+
+            const baseId = title.toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, '') || `album-${Date.now()}`;
+            let albumId = baseId;
+            let suffix = 2;
+            while (albums[albumId]) {
+                albumId = `${baseId}-${suffix}`;
+                suffix += 1;
+            }
+
+            albums[albumId] = {
+                title,
+                meta: metaInput.value.trim() || 'Manual Album',
+                photos: []
+            };
+
+            saveAdminData();
+            renderAlbumCards();
+            initAdminControls();
+            document.getElementById('admin-photo-album').value = albumId;
+            renderAdminPhotoList();
+            event.target.reset();
+            switchAdminTab('photos');
         }
 
         function renderAdminPhotoList() {
