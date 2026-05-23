@@ -769,7 +769,14 @@
 
         function renderAlbumCards() {
             const list = document.getElementById('album-list');
-            list.innerHTML = Object.entries(albums).map(([albumId, album]) => {
+            list.innerHTML = Object.entries(albums).filter(([albumId]) => {
+                const live = liveData[albumId];
+                if (!live) return true;
+
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                return new Date(`${live.dateValue}T00:00:00`) <= today;
+            }).map(([albumId, album]) => {
                 const cover = album.photos[0]?.src || 'assets/logos/band-logo.jpg';
                 const count = album.photos.length > 0 ? `${album.photos.length} Photos` : 'Coming Soon';
                 return `
