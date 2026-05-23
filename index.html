@@ -444,6 +444,18 @@
         </button>
     </div>
 
+    <div id="confirm-modal" class="fixed inset-0 z-[160] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black bg-opacity-90 backdrop-blur-md" onclick="resolveConfirm(false)"></div>
+        <div class="relative glass max-w-md w-full p-8 rounded-3xl shadow-2xl border-red-500/60 border">
+            <h2 id="confirm-title" class="text-3xl font-black mb-4 italic">削除しますか？</h2>
+            <p id="confirm-message" class="opacity-75 leading-relaxed mb-8">この操作は取り消せません。</p>
+            <div class="grid grid-cols-2 gap-3">
+                <button type="button" onclick="resolveConfirm(false)" class="border border-white/20 py-3 rounded-full font-black hover:border-pink-500 transition">キャンセル</button>
+                <button type="button" onclick="resolveConfirm(true)" class="bg-red-600 text-white py-3 rounded-full font-black hover:bg-red-500 transition">削除する</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         lucide.createIcons();
 
@@ -454,6 +466,30 @@
                 document.body.style.overflow = 'hidden';
             } else {
                 document.body.style.overflow = 'auto';
+            }
+        }
+
+        let pendingConfirmResolve = null;
+
+        function showConfirm(message, title = '削除しますか？') {
+            document.getElementById('confirm-title').innerText = title;
+            document.getElementById('confirm-message').innerText = message;
+            document.getElementById('confirm-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+
+            return new Promise(resolve => {
+                pendingConfirmResolve = resolve;
+            });
+        }
+
+        function resolveConfirm(confirmed) {
+            document.getElementById('confirm-modal').classList.add('hidden');
+            const openModal = Array.from(document.querySelectorAll('#admin-panel-modal, #admin-login-modal, #member-detail-modal, #live-detail-modal, #album-modal, #photo-modal'))
+                .some(modal => !modal.classList.contains('hidden'));
+            document.body.style.overflow = openModal ? 'hidden' : 'auto';
+            if (pendingConfirmResolve) {
+                pendingConfirmResolve(confirmed);
+                pendingConfirmResolve = null;
             }
         }
 
@@ -962,10 +998,10 @@
             renderAlbumCards();
         }
 
-        function deleteAdminPhoto(albumId, index) {
+        async function deleteAdminPhoto(albumId, index) {
             const photo = albums[albumId]?.photos[index];
             if (!photo) return;
-            if (!confirm('この写真を削除しますか？')) return;
+            if (!await showConfirm('この写真を削除しますか？')) return;
 
             albums[albumId].photos.splice(index, 1);
             saveAdminData();
@@ -1033,7 +1069,8 @@
             document.getElementById('admin-live-flyer-preview').src = await resizeImageFile(file, 1400, 0.82);
         }
 
-        function clearAdminLiveFlyer() {
+        async function clearAdminLiveFlyer() {
+            if (!await showConfirm('フライヤー画像を削除しますか？')) return;
             document.getElementById('admin-live-flyer-preview').src = '';
             document.getElementById('admin-live-flyer').value = '';
         }
@@ -1109,9 +1146,9 @@
             switchAdminTab('live');
         }
 
-        function deleteAdminLive(liveId) {
+        async function deleteAdminLive(liveId) {
             if (!liveData[liveId]) return;
-            if (!confirm(`${liveData[liveId].title} を削除しますか？`)) return;
+            if (!await showConfirm(`${liveData[liveId].title} を削除しますか？`)) return;
 
             delete liveData[liveId];
             delete albums[liveId];
@@ -1433,12 +1470,14 @@
             document.getElementById('admin-equipment-image-file').click();
         }
 
-        function removeAdminActivityEditor(index) {
+        async function removeAdminActivityEditor(index) {
+            if (!await showConfirm('このアナザーバンドのセットを削除しますか？')) return;
             document.querySelector(`[data-activity-index="${index}"]`)?.remove();
             refreshAdminActivityEditorIndexes();
         }
 
-        function removeAdminEquipmentEditor(index) {
+        async function removeAdminEquipmentEditor(index) {
+            if (!await showConfirm('この機材を削除しますか？')) return;
             document.querySelector(`[data-equipment-index="${index}"]`)?.remove();
             refreshAdminEquipmentEditorIndexes();
         }
@@ -1468,13 +1507,15 @@
             event.target.value = '';
         }
 
-        function clearAdminActivityImage(index) {
+        async function clearAdminActivityImage(index) {
+            if (!await showConfirm('この画像を削除しますか？')) return;
             const preview = document.getElementById(`admin-activity-image-preview-${index}`);
             if (preview) preview.src = '';
             document.getElementById('admin-activity-image-file').value = '';
         }
 
-        function clearAdminEquipmentImage(index) {
+        async function clearAdminEquipmentImage(index) {
+            if (!await showConfirm('この画像を削除しますか？')) return;
             const preview = document.getElementById(`admin-equipment-image-preview-${index}`);
             if (preview) preview.src = '';
             document.getElementById('admin-equipment-image-file').value = '';
