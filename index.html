@@ -351,7 +351,7 @@
                     <h3 class="text-2xl font-black mb-4">プロフィール編集</h3>
                     <form class="space-y-3" onsubmit="saveAdminProfile(event)">
                         <label class="block text-xs uppercase font-bold opacity-60">メンバー</label>
-                        <select id="admin-member-select" onchange="loadAdminProfile()" class="w-full bg-zinc-900 border border-white/20 p-3 rounded-xl"></select>
+                        <div id="admin-member-tabs" class="grid grid-cols-2 sm:grid-cols-4 gap-2"></div>
                         <label class="block text-xs uppercase font-bold opacity-60">メンバー写真</label>
                         <div class="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl p-3">
                             <button type="button" onclick="document.getElementById('admin-member-photo').click()" class="group relative w-28 h-28 flex-none overflow-hidden rounded-xl border border-white/20 bg-zinc-900 text-left">
@@ -853,9 +853,8 @@
 
         function initAdminControls() {
             const albumSelect = document.getElementById('admin-photo-album');
-            const memberSelect = document.getElementById('admin-member-select');
             albumSelect.innerHTML = Object.entries(albums).map(([id, album]) => `<option value="${id}">${album.title}</option>`).join('');
-            memberSelect.innerHTML = Object.entries(memberData).map(([id, member]) => `<option value="${id}">${member.name}</option>`).join('');
+            renderAdminMemberTabs();
             initAdminPanelSections();
             renderAdminPhotoList();
             renderAdminLiveList();
@@ -1279,8 +1278,35 @@
             alert('Live日程を追加しました。');
         }
 
+        let currentAdminMemberId = 'nami';
+
+        function renderAdminMemberTabs() {
+            const tabs = document.getElementById('admin-member-tabs');
+            if (!tabs) return;
+
+            if (!memberData[currentAdminMemberId]) {
+                currentAdminMemberId = Object.keys(memberData)[0];
+            }
+
+            tabs.innerHTML = Object.entries(memberData).map(([memberId, member]) => {
+                const active = memberId === currentAdminMemberId;
+                const theme = getMemberTheme(memberId);
+                return `
+                    <button type="button" onclick="selectAdminMember('${memberId}')" class="admin-member-tab px-4 py-3 rounded-2xl font-black text-sm border transition ${active ? '' : 'bg-white/5 border-white/10 hover:border-pink-500'}" style="${active ? `border-color: ${theme.color}; color: ${theme.color}; box-shadow: 0 0 18px ${theme.colorSoft};` : ''}">
+                        ${member.name}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function selectAdminMember(memberId) {
+            currentAdminMemberId = memberId;
+            renderAdminMemberTabs();
+            loadAdminProfile();
+        }
+
         function loadAdminProfile() {
-            const memberId = document.getElementById('admin-member-select')?.value;
+            const memberId = currentAdminMemberId;
             if (!memberId || !memberData[memberId]) return;
             const member = memberData[memberId];
             document.getElementById('admin-member-role').value = member.role;
@@ -1523,7 +1549,7 @@
 
         async function saveAdminProfile(event) {
             event.preventDefault();
-            const memberId = document.getElementById('admin-member-select').value;
+            const memberId = currentAdminMemberId;
             const member = memberData[memberId];
             const file = document.getElementById('admin-member-photo').files[0];
             member.role = document.getElementById('admin-member-role').value;
