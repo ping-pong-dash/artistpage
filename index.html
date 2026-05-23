@@ -899,9 +899,9 @@
                     </button>
                     <div class="p-4 space-y-3">
                         <label class="text-xs uppercase font-bold opacity-60">Comment</label>
-                        <textarea id="admin-photo-comment-${index}" rows="3" class="w-full bg-white/10 border border-white/20 p-3 rounded-xl" placeholder="Photo comment">${photo.comment || photo.alt || ''}</textarea>
+                        <textarea id="admin-photo-comment-${index}" rows="3" oninput="saveAdminPhotoComment('${albumId}', ${index})" class="w-full bg-white/10 border border-white/20 p-3 rounded-xl" placeholder="Photo comment">${photo.comment || photo.alt || ''}</textarea>
                         <div class="flex flex-wrap gap-2">
-                            <button type="button" onclick="saveAdminPhotoComment('${albumId}', ${index})" class="rock-gradient px-4 py-2 rounded-full text-xs font-bold">Save</button>
+                            <span class="border border-green-500/50 text-green-300 px-4 py-2 rounded-full text-xs font-bold">自動保存</span>
                             <button type="button" onclick="deleteAdminPhoto('${albumId}', ${index})" class="border border-red-500/50 text-red-300 px-4 py-2 rounded-full text-xs font-bold hover:bg-red-500/10 transition">削除</button>
                         </div>
                     </div>
@@ -919,7 +919,6 @@
             photo.alt = input.value || albums[albumId].title;
             saveAdminData();
             renderAlbumCards();
-            alert('写真コメントを保存しました。');
         }
 
         function deleteAdminPhoto(albumId, index) {
