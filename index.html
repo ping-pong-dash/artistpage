@@ -732,13 +732,27 @@
 }
 };
 
+        const ADMIN_DATA_VERSION = '2026-05-24-local-content-v1';
+
         function saveAdminData() {
+            localStorage.setItem('ppdAdminDataVersion', ADMIN_DATA_VERSION);
             localStorage.setItem('ppdMemberData', JSON.stringify(memberData));
             localStorage.setItem('ppdLiveData', JSON.stringify(liveData));
             localStorage.setItem('ppdAlbums', JSON.stringify(albums));
         }
 
         function loadAdminData() {
+            const savedVersion = localStorage.getItem('ppdAdminDataVersion');
+            if (savedVersion !== ADMIN_DATA_VERSION) {
+                localStorage.removeItem('ppdMemberData');
+                localStorage.removeItem('ppdLiveData');
+                localStorage.removeItem('ppdAlbums');
+                applyMemberDefaults();
+                applyLiveDefaults();
+                saveAdminData();
+                return;
+            }
+
             const savedMembers = localStorage.getItem('ppdMemberData');
             const savedLives = localStorage.getItem('ppdLiveData');
             const savedAlbums = localStorage.getItem('ppdAlbums');
