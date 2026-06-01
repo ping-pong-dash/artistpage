@@ -292,10 +292,22 @@
                         </div>
                         <div>
                             <label class="text-xs uppercase font-bold opacity-60">Photo</label>
-                            <input id="admin-photo-file" type="file" accept="image/*" required class="w-full bg-white/10 border border-white/20 p-3 rounded-xl mt-1">
+                            <label id="admin-photo-dropzone" for="admin-photo-file" class="mt-1 flex min-h-36 cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-white/20 bg-white/5 p-6 text-center transition hover:border-pink-500 hover:bg-pink-500/10" ondragover="handleAdminPhotoDrag(event, true)" ondragleave="handleAdminPhotoDrag(event, false)" ondrop="dropAdminPhotos(event)">
+                                <i data-lucide="image-plus" class="w-8 h-8 text-pink-400"></i>
+                                <span id="admin-photo-file-label" class="text-sm font-bold opacity-70">Drop photos here or click to choose</span>
+                            </label>
+                            <input id="admin-photo-file" type="file" accept="image/*" multiple class="hidden" onchange="updateAdminPhotoFileLabel()">
                         </div>
                         <textarea id="admin-photo-caption" rows="3" placeholder="Comment (optional)" class="w-full bg-white/10 border border-white/20 p-3 rounded-xl"></textarea>
                         <button type="submit" class="w-full rock-gradient py-3 rounded-full font-black">追加</button>
+                    </form>
+                    <form class="border-t border-white/10 mt-8 pt-6 space-y-3" onsubmit="saveAdminAlbum(event)">
+                        <h4 class="text-xl font-black">アルバム名変更</h4>
+                        <label class="block text-xs uppercase font-bold opacity-60">Album title</label>
+                        <input id="admin-edit-album-title" type="text" placeholder="Album title" required class="w-full bg-white/10 border border-white/20 p-3 rounded-xl">
+                        <label class="block text-xs uppercase font-bold opacity-60">Meta / date</label>
+                        <input id="admin-edit-album-meta" type="text" placeholder="2026.05.23 / Offshot" class="w-full bg-white/10 border border-white/20 p-3 rounded-xl">
+                        <button type="submit" class="w-full border border-white/20 py-3 rounded-full font-black hover:border-pink-500 transition">変更を保存</button>
                     </form>
                     <form class="border-t border-white/10 mt-8 pt-6 space-y-3" onsubmit="createAdminAlbum(event)">
                         <h4 class="text-xl font-black">アルバム作成</h4>
@@ -692,7 +704,7 @@
             `).join('');
             document.getElementById('member-detail-equipment').innerHTML = (member.equipment || []).map(item => `
                 <div class="overflow-hidden rounded-2xl bg-white/5 border border-white/10">
-                    ${item.image ? `<img src="${item.image}" class="w-full aspect-[4/3] object-cover bg-zinc-900" alt="${item.name}">` : ''}
+                    ${item.image ? `<img src="${item.image}" class="w-full h-auto bg-zinc-950/80 object-contain" alt="${item.name}">` : ''}
                     <div class="p-4">
                         <h4 class="font-black text-lg" style="color: ${theme.color};">${item.name}</h4>
                         <p class="text-sm opacity-70 leading-relaxed">${item.detail}</p>
@@ -926,7 +938,8 @@
                 today.setHours(0, 0, 0, 0);
                 return new Date(`${live.dateValue}T00:00:00`) <= today;
             }).map(([albumId, album]) => {
-                const cover = album.photos[0]?.src || 'assets/logos/band-logo.jpg';
+                const coverPhoto = album.photos[Number.isInteger(album.coverIndex) ? album.coverIndex : 0] || album.photos[0];
+                const cover = coverPhoto?.src || 'assets/logos/band-logo.jpg';
                 const count = album.photos.length > 0 ? `${album.photos.length} Photos` : 'Coming Soon';
                 return `
                     <button onclick="openAlbum('${albumId}')" class="group text-left glass overflow-hidden rounded-3xl hover:border-pink-500 transition">
@@ -958,7 +971,9 @@
 
         function initAdminControls() {
             const albumSelect = document.getElementById('admin-photo-album');
+            const selectedAlbumId = albumSelect.value;
             albumSelect.innerHTML = Object.entries(albums).map(([id, album]) => `<option value="${id}">${album.title}</option>`).join('');
+            if (albums[selectedAlbumId]) albumSelect.value = selectedAlbumId;
             renderAdminMemberTabs();
             initAdminPanelSections();
             renderAdminPhotoList();
@@ -1045,6 +1060,7 @@
             albums[albumId] = {
                 title,
                 meta: metaInput.value.trim() || 'Manual Album',
+                coverIndex: 0,
                 photos: []
             };
 
@@ -1057,6 +1073,44 @@
             switchAdminTab('photos');
         }
 
+        function loadAdminAlbumEditor() {
+            const albumId = document.getElementById('admin-photo-album')?.value;
+            const album = albums[albumId];
+            const titleInput = document.getElementById('admin-edit-album-title');
+            const metaInput = document.getElementById('admin-edit-album-meta');
+            if (!titleInput || !metaInput) return;
+
+            titleInput.value = album?.title || '';
+            metaInput.value = album?.meta || '';
+        }
+
+        function saveAdminAlbum(event) {
+            event.preventDefault();
+
+            const albumId = document.getElementById('admin-photo-album').value;
+            const album = albums[albumId];
+            if (!album) return;
+
+            const title = document.getElementById('admin-edit-album-title').value.trim();
+            const meta = document.getElementById('admin-edit-album-meta').value.trim();
+            if (!title) return;
+
+            album.title = title;
+            album.meta = meta || 'Manual Album';
+            album.photos.forEach(photo => {
+                if (!photo.comment) photo.alt = title;
+            });
+
+            saveAdminData();
+            renderAlbumCards();
+            initAdminControls();
+            document.getElementById('admin-photo-album').value = albumId;
+            loadAdminAlbumEditor();
+            renderAdminPhotoList();
+            switchAdminTab('photos');
+            alert('Album updated.');
+        }
+
         function renderAdminPhotoList() {
             const list = document.getElementById('admin-photo-list');
             const albumSelect = document.getElementById('admin-photo-album');
@@ -1064,6 +1118,8 @@
 
             const albumId = albumSelect.value;
             const album = albums[albumId];
+            loadAdminAlbumEditor();
+            const coverIndex = Number.isInteger(album?.coverIndex) ? album.coverIndex : 0;
             if (!album || album.photos.length === 0) {
                 list.innerHTML = '<p class="bg-white/5 rounded-2xl p-4 text-sm opacity-70 md:col-span-2">このアルバムにはまだ写真がありません。</p>';
                 return;
@@ -1082,6 +1138,7 @@
                         <label class="text-xs uppercase font-bold opacity-60">Comment</label>
                         <textarea id="admin-photo-comment-${index}" rows="3" oninput="saveAdminPhotoComment('${albumId}', ${index})" class="w-full bg-white/10 border border-white/20 p-3 rounded-xl" placeholder="Photo comment">${photo.comment || photo.alt || ''}</textarea>
                         <div class="flex flex-wrap gap-2">
+                            ${index === coverIndex ? '<span class="border border-pink-500/60 text-pink-300 px-4 py-2 rounded-full text-xs font-bold">トップ画像</span>' : `<button type="button" onclick="setAdminAlbumCover('${albumId}', ${index})" class="border border-white/20 px-4 py-2 rounded-full text-xs font-bold hover:border-pink-500 transition">トップ画像にする</button>`}
                             <span class="border border-green-500/50 text-green-300 px-4 py-2 rounded-full text-xs font-bold">自動保存</span>
                             <button type="button" onclick="deleteAdminPhoto('${albumId}', ${index})" class="border border-red-500/50 text-red-300 px-4 py-2 rounded-full text-xs font-bold hover:bg-red-500/10 transition">削除</button>
                         </div>
@@ -1092,7 +1149,8 @@
         }
 
         function saveAdminPhotoComment(albumId, index) {
-            const photo = albums[albumId]?.photos[index];
+            const album = albums[albumId];
+            const photo = album?.photos[index];
             const input = document.getElementById(`admin-photo-comment-${index}`);
             if (!photo || !input) return;
 
@@ -1102,12 +1160,28 @@
             renderAlbumCards();
         }
 
+        function setAdminAlbumCover(albumId, index) {
+            const album = albums[albumId];
+            if (!album?.photos[index]) return;
+
+            album.coverIndex = index;
+            saveAdminData();
+            renderAlbumCards();
+            renderAdminPhotoList();
+        }
+
         async function deleteAdminPhoto(albumId, index) {
-            const photo = albums[albumId]?.photos[index];
+            const album = albums[albumId];
+            const photo = album?.photos[index];
             if (!photo) return;
             if (!await showConfirm('この写真を削除しますか？')) return;
 
-            albums[albumId].photos.splice(index, 1);
+            album.photos.splice(index, 1);
+            if (Number.isInteger(album.coverIndex)) {
+                if (album.coverIndex === index) album.coverIndex = 0;
+                if (album.coverIndex > index) album.coverIndex -= 1;
+                if (album.coverIndex >= album.photos.length) album.coverIndex = 0;
+            }
             saveAdminData();
             renderAlbumCards();
             renderAdminPhotoList();
@@ -1300,22 +1374,46 @@
             });
         }
 
-        function resizeImageFile(file, maxSize = 1600, quality = 0.82) {
+        function dataUrlByteSize(dataUrl) {
+            const base64 = dataUrl.split(',')[1] || '';
+            return Math.ceil((base64.length * 3) / 4);
+        }
+
+        function resizeImageFile(file, maxSize = 1600, quality = 0.82, maxBytes = null) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.onload = () => {
                     const img = new Image();
                     img.onload = () => {
-                        const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
-                        const width = Math.max(1, Math.round(img.width * scale));
-                        const height = Math.max(1, Math.round(img.height * scale));
                         const canvas = document.createElement('canvas');
                         const context = canvas.getContext('2d');
+                        const render = (targetSize, targetQuality) => {
+                            const scale = Math.min(1, targetSize / Math.max(img.width, img.height));
+                            const width = Math.max(1, Math.round(img.width * scale));
+                            const height = Math.max(1, Math.round(img.height * scale));
 
-                        canvas.width = width;
-                        canvas.height = height;
-                        context.drawImage(img, 0, 0, width, height);
-                        resolve(canvas.toDataURL('image/jpeg', quality));
+                            canvas.width = width;
+                            canvas.height = height;
+                            context.clearRect(0, 0, width, height);
+                            context.drawImage(img, 0, 0, width, height);
+                            return canvas.toDataURL('image/jpeg', targetQuality);
+                        };
+
+                        let targetSize = maxSize;
+                        let targetQuality = quality;
+                        let dataUrl = render(targetSize, targetQuality);
+
+                        while (maxBytes && dataUrlByteSize(dataUrl) > maxBytes && (targetSize > 720 || targetQuality > 0.54)) {
+                            if (targetQuality > 0.54) {
+                                targetQuality = Math.max(0.54, targetQuality - 0.08);
+                            } else {
+                                targetSize = Math.max(720, Math.round(targetSize * 0.86));
+                                targetQuality = quality;
+                            }
+                            dataUrl = render(targetSize, targetQuality);
+                        }
+
+                        resolve(dataUrl);
                     };
                     img.onerror = reject;
                     img.src = reader.result;
@@ -1334,8 +1432,89 @@
             });
         }
 
+        function getAdminPhotoFiles(fileList) {
+            return Array.from(fileList || []).filter(file => file.type.startsWith('image/'));
+        }
+
+        function updateAdminPhotoFileLabel() {
+            const files = getAdminPhotoFiles(document.getElementById('admin-photo-file')?.files);
+            const label = document.getElementById('admin-photo-file-label');
+            if (!label) return;
+
+            label.innerText = files.length > 0
+                ? `${files.length} photo${files.length === 1 ? '' : 's'} selected`
+                : 'Drop photos here or click to choose';
+        }
+
+        function handleAdminPhotoDrag(event, active) {
+            event.preventDefault();
+            const dropzone = document.getElementById('admin-photo-dropzone');
+            if (!dropzone) return;
+
+            dropzone.classList.toggle('border-pink-500', active);
+            dropzone.classList.toggle('bg-pink-500/10', active);
+        }
+
+        async function addAdminPhotos(albumId, files, comment = '') {
+            const album = albums[albumId];
+            const imageFiles = getAdminPhotoFiles(files);
+            if (!album || imageFiles.length === 0) return false;
+
+            const addedPhotos = [];
+            const firstAddedIndex = album.photos.length;
+            for (const file of imageFiles) {
+                const src = await resizeImageFile(file, 1400, 0.78, 420 * 1024);
+                const orientation = await getImageOrientation(src);
+                const photo = { src, alt: comment || album.title, comment, orientation };
+                album.photos.push(photo);
+                addedPhotos.push(photo);
+            }
+            if (!Number.isInteger(album.coverIndex)) album.coverIndex = firstAddedIndex;
+
+            try {
+                saveAdminData();
+            } catch (error) {
+                album.photos.splice(-addedPhotos.length, addedPhotos.length);
+                alert('Could not save photos. Try smaller images.');
+                return false;
+            }
+
+            refreshSite();
+            document.getElementById('admin-photo-album').value = albumId;
+            renderAdminPhotoList();
+            return true;
+        }
+
+        async function dropAdminPhotos(event) {
+            event.preventDefault();
+            handleAdminPhotoDrag(event, false);
+
+            const albumId = document.getElementById('admin-photo-album').value;
+            const comment = document.getElementById('admin-photo-caption').value.trim();
+            const added = await addAdminPhotos(albumId, event.dataTransfer?.files, comment);
+            if (!added) return;
+
+            document.getElementById('admin-photo-file').value = '';
+            document.getElementById('admin-photo-caption').value = '';
+            updateAdminPhotoFileLabel();
+            alert('Photos added.');
+        }
+
         async function uploadAdminPhoto(event) {
             event.preventDefault();
+            {
+                const albumId = document.getElementById('admin-photo-album').value;
+                const fileInput = document.getElementById('admin-photo-file');
+                const comment = document.getElementById('admin-photo-caption').value.trim();
+                const added = await addAdminPhotos(albumId, fileInput.files, comment);
+                if (!added) return;
+
+                event.target.reset();
+                document.getElementById('admin-photo-album').value = albumId;
+                updateAdminPhotoFileLabel();
+                alert('Photos added.');
+                return;
+            }
             const albumId = document.getElementById('admin-photo-album').value;
             const file = document.getElementById('admin-photo-file').files[0];
             const comment = document.getElementById('admin-photo-caption').value.trim();
