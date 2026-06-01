@@ -702,7 +702,7 @@
 }
 };
 
-        const ADMIN_DATA_VERSION = '2026-05-24-local-content-v1';
+        const ADMIN_DATA_VERSION = '2026-06-01-restored-content-v1';
 
         function saveAdminData() {
             localStorage.setItem('ppdAdminDataVersion', ADMIN_DATA_VERSION);
@@ -713,15 +713,26 @@
 
         function loadAdminData() {
             const savedVersion = localStorage.getItem('ppdAdminDataVersion');
+            if (savedVersion !== ADMIN_DATA_VERSION) {
+                applyMemberDefaults();
+                applyLiveDefaults();
+                saveAdminData();
+                return;
+            }
+
             const savedMembers = localStorage.getItem('ppdMemberData');
             const savedLives = localStorage.getItem('ppdLiveData');
             const savedAlbums = localStorage.getItem('ppdAlbums');
-            if (savedMembers) memberData = JSON.parse(savedMembers);
-            if (savedLives) liveData = JSON.parse(savedLives);
-            if (savedAlbums) albums = JSON.parse(savedAlbums);
-            applyMemberDefaults();
-            applyLiveDefaults();
-            if (savedVersion !== ADMIN_DATA_VERSION) {
+            try {
+                if (savedMembers) memberData = JSON.parse(savedMembers);
+                if (savedLives) liveData = JSON.parse(savedLives);
+                if (savedAlbums) albums = JSON.parse(savedAlbums);
+                applyMemberDefaults();
+                applyLiveDefaults();
+            } catch (error) {
+                console.warn('Saved admin data could not be loaded. Restoring bundled data.', error);
+                applyMemberDefaults();
+                applyLiveDefaults();
                 saveAdminData();
             }
         }
