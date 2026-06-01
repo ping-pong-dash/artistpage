@@ -704,6 +704,33 @@
 
         const ADMIN_DATA_VERSION = '2026-06-01-restored-content-v1';
 
+        const memberThemeDefaults = {
+            nami: { color: '#ff4fa3', colorSoft: 'rgba(255, 79, 163, 0.28)' },
+            meri: { color: '#ffd447', colorSoft: 'rgba(255, 212, 71, 0.26)' },
+            miki: { color: '#a855f7', colorSoft: 'rgba(168, 85, 247, 0.3)' },
+            rei: { color: '#38bdf8', colorSoft: 'rgba(56, 189, 248, 0.28)' }
+        };
+
+        function getMemberTheme(memberId) {
+            const member = memberData[memberId] || {};
+            const defaults = memberThemeDefaults[memberId] || memberThemeDefaults.nami;
+            return {
+                color: member.color || defaults.color,
+                colorSoft: member.colorSoft || defaults.colorSoft
+            };
+        }
+
+        function applyMemberDefaults() {
+            Object.entries(memberData).forEach(([memberId, member]) => {
+                const theme = getMemberTheme(memberId);
+                member.color = member.color || theme.color;
+                member.colorSoft = member.colorSoft || theme.colorSoft;
+                member.activities = Array.isArray(member.activities) ? member.activities : [];
+                member.equipment = Array.isArray(member.equipment) ? member.equipment : [];
+                member.tags = Array.isArray(member.tags) ? member.tags : [];
+            });
+        }
+
         function saveAdminData() {
             localStorage.setItem('ppdAdminDataVersion', ADMIN_DATA_VERSION);
             localStorage.setItem('ppdMemberData', JSON.stringify(memberData));
@@ -731,9 +758,18 @@
             const savedLives = localStorage.getItem('ppdLiveData');
             const savedAlbums = localStorage.getItem('ppdAlbums');
             try {
-                if (savedMembers) memberData = JSON.parse(savedMembers);
-                if (savedLives) liveData = JSON.parse(savedLives);
-                if (savedAlbums) albums = JSON.parse(savedAlbums);
+                if (savedMembers) {
+                    const parsedMembers = JSON.parse(savedMembers);
+                    if (parsedMembers && Object.keys(parsedMembers).length > 0) memberData = parsedMembers;
+                }
+                if (savedLives) {
+                    const parsedLives = JSON.parse(savedLives);
+                    if (parsedLives && Object.keys(parsedLives).length > 0) liveData = parsedLives;
+                }
+                if (savedAlbums) {
+                    const parsedAlbums = JSON.parse(savedAlbums);
+                    if (parsedAlbums && Object.keys(parsedAlbums).length > 0) albums = parsedAlbums;
+                }
                 applyMemberDefaults();
                 applyLiveDefaults();
             } catch (error) {
