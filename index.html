@@ -847,6 +847,55 @@
             }).join('');
         }
 
+        function openMemberDetail(memberId) {
+            const member = memberData[memberId];
+            if (!member) return;
+
+            const theme = getMemberTheme(memberId);
+            const imagePosition = member.imagePosition || (memberId === 'rei' ? 'right center' : 'center center');
+            const imageScale = member.imageScale || 1;
+            const image = document.getElementById('member-detail-image');
+
+            image.src = member.image || '';
+            image.alt = member.name || '';
+            image.style.borderColor = theme.color;
+            image.style.objectPosition = imagePosition;
+            image.style.transform = `scale(${imageScale})`;
+
+            document.getElementById('member-detail-role').innerText = member.role || '';
+            document.getElementById('member-detail-role').style.color = theme.color;
+            document.getElementById('member-detail-name').innerText = member.name || '';
+            document.getElementById('member-detail-profile').innerText = member.profile || '';
+
+            const activities = Array.isArray(member.activities) ? member.activities : [];
+            document.getElementById('member-detail-activities').innerHTML = activities.length ? activities.map(activity => `
+                <div class="bg-white/5 border border-white/10 rounded-2xl p-4">
+                    <h4 class="font-black text-lg mb-2" style="color: ${theme.color};">${escapeAdminField(activity.band || '')}</h4>
+                    <p class="opacity-75 leading-relaxed">${escapeAdminField(activity.detail || '')}</p>
+                </div>
+            `).join('') : '<p class="opacity-50">No activity data yet.</p>';
+
+            const equipment = Array.isArray(member.equipment) ? member.equipment : [];
+            document.getElementById('member-detail-equipment').innerHTML = equipment.length ? equipment.map(item => `
+                <div class="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+                    ${item.image ? `<div class="aspect-[4/3] bg-black/40 flex items-center justify-center"><img src="${escapeAdminField(item.image)}" class="w-full h-full object-contain" alt="${escapeAdminField(item.name || 'Equipment')}"></div>` : ''}
+                    <div class="p-4">
+                        <h4 class="font-black text-lg mb-2" style="color: ${theme.color};">${escapeAdminField(item.name || '')}</h4>
+                        <p class="opacity-75 leading-relaxed">${escapeAdminField(item.detail || '')}</p>
+                    </div>
+                </div>
+            `).join('') : '<p class="opacity-50">No equipment data yet.</p>';
+
+            document.getElementById('member-detail-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            lucide.createIcons();
+        }
+
+        function closeMemberDetail() {
+            document.getElementById('member-detail-modal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
         function openLiveDetail(liveId) {
             const live = liveData[liveId];
             if (!live || live.visible === false) return;
