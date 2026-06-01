@@ -755,16 +755,6 @@
 
         function loadAdminData() {
             const savedVersion = localStorage.getItem('ppdAdminDataVersion');
-            if (savedVersion !== ADMIN_DATA_VERSION) {
-                localStorage.removeItem('ppdMemberData');
-                localStorage.removeItem('ppdLiveData');
-                localStorage.removeItem('ppdAlbums');
-                applyMemberDefaults();
-                applyLiveDefaults();
-                saveAdminData();
-                return;
-            }
-
             const savedMembers = localStorage.getItem('ppdMemberData');
             const savedLives = localStorage.getItem('ppdLiveData');
             const savedAlbums = localStorage.getItem('ppdAlbums');
@@ -773,6 +763,9 @@
             if (savedAlbums) albums = JSON.parse(savedAlbums);
             applyMemberDefaults();
             applyLiveDefaults();
+            if (savedVersion !== ADMIN_DATA_VERSION) {
+                saveAdminData();
+            }
         }
 
         function applyLiveDefaults() {
