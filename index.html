@@ -680,164 +680,27 @@
 };
 
         let liveData = {
-"shibuya": {
-            "title": "ROCK SPICE",
-            "dateValue": "2026-12-19",
-            "date": "2026.12.19 SAT",
-            "venue": "HAMAMATSU　FORCE",
-            "time": "OPEN 16:30 / START 17:00",
-            "charge": "¥2,000  + 1D",
-            "info": "HODGE×POOGE　presents\nBIRTHDAY FESTIVAL2026",
-            "visible": true
-},
-"osaka": {
-            "title": "掛川納涼まつり　2026",
-            "dateValue": "2026-08-02",
-            "date": "2026.08.02 SUN",
-            "venue": "掛川市栄町交差点　特設ステージ",
-            "time": "1７:30～20:30",
-            "charge": "無料",
-            "info": "開放的な野外ステージで盛り上がりましょう！！",
-            "visible": true
-}
+          "shibuya": {
+                    "title": "ROCK SPICE",
+                    "dateValue": "2026-12-19",
+                    "date": "2026.12.19 SAT",
+                    "venue": "HAMAMATSU　FORCE",
+                    "time": "OPEN 16:30 / START 17:00",
+                    "charge": "¥2,000  + 1D",
+                    "info": "HODGE×POOGE　presents\nBIRTHDAY FESTIVAL2026",
+                    "visible": true
+          },
+          "osaka": {
+                    "title": "掛川納涼まつり　2026",
+                    "dateValue": "2026-08-02",
+                    "date": "2026.08.02 SUN",
+                    "venue": "掛川市栄町交差点　特設ステージ",
+                    "time": "1７:30～20:30",
+                    "charge": "無料",
+                    "info": "開放的な野外ステージで盛り上がりましょう！！",
+                    "visible": true
+          }
 };
-
-        const ADMIN_DATA_VERSION = '2026-06-01-restored-content-v1';
-
-        function saveAdminData() {
-            localStorage.setItem('ppdAdminDataVersion', ADMIN_DATA_VERSION);
-            localStorage.setItem('ppdMemberData', JSON.stringify(memberData));
-            localStorage.setItem('ppdLiveData', JSON.stringify(liveData));
-            localStorage.setItem('ppdAlbums', JSON.stringify(albums));
-        }
-
-        function loadAdminData() {
-            const savedVersion = localStorage.getItem('ppdAdminDataVersion');
-            if (savedVersion !== ADMIN_DATA_VERSION) {
-                applyMemberDefaults();
-                applyLiveDefaults();
-                localStorage.removeItem('ppdMemberData');
-                localStorage.removeItem('ppdLiveData');
-                localStorage.removeItem('ppdAlbums');
-                try {
-                    localStorage.setItem('ppdAdminDataVersion', ADMIN_DATA_VERSION);
-                } catch (error) {
-                    console.warn('Admin data version could not be saved.', error);
-                }
-                return;
-            }
-
-            const savedMembers = localStorage.getItem('ppdMemberData');
-            const savedLives = localStorage.getItem('ppdLiveData');
-            const savedAlbums = localStorage.getItem('ppdAlbums');
-            try {
-                if (savedMembers) memberData = JSON.parse(savedMembers);
-                if (savedLives) liveData = JSON.parse(savedLives);
-                if (savedAlbums) albums = JSON.parse(savedAlbums);
-                applyMemberDefaults();
-                applyLiveDefaults();
-            } catch (error) {
-                console.warn('Saved admin data could not be loaded. Restoring bundled data.', error);
-                applyMemberDefaults();
-                applyLiveDefaults();
-                localStorage.removeItem('ppdMemberData');
-                localStorage.removeItem('ppdLiveData');
-                localStorage.removeItem('ppdAlbums');
-            }
-        }
-
-        function applyLiveDefaults() {
-            Object.values(liveData).forEach(live => {
-                if (typeof live.visible === 'undefined') {
-                    live.visible = true;
-                }
-            });
-        }
-
-        function formatLiveDate(dateValue) {
-            const date = new Date(`${dateValue}T00:00:00`);
-            const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-            return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')} ${days[date.getDay()]}`;
-        }
-
-        function renderLiveList() {
-            const list = document.getElementById('live-list');
-            const sortedLives = Object.entries(liveData)
-                .filter(([, live]) => live.visible !== false)
-                .sort((a, b) => new Date(a[1].dateValue) - new Date(b[1].dateValue));
-            list.innerHTML = sortedLives.map(([liveId, live]) => {
-                const date = new Date(`${live.dateValue}T00:00:00`);
-                const monthDay = `${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
-                const day = live.date.split(' ').pop();
-                const flyer = live.flyer || '';
-                return `
-                    <div onclick="openLiveDetail('${liveId}')" class="glass p-6 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-6 hover:border-pink-500 transition group cursor-pointer">
-                        <div class="flex items-center gap-8 w-full md:w-auto">
-                            ${flyer ? `<img src="${flyer}" class="w-20 h-28 rounded-xl object-cover bg-zinc-900 flex-none" alt="${live.title} flyer">` : ''}
-                            <div class="text-center">
-                                <div class="text-pink-500 font-black text-2xl">${monthDay}</div>
-                                <div class="text-xs opacity-60">${day}</div>
-                            </div>
-                            <div>
-                                <h3 class="text-xl font-bold group-hover:text-pink-400 transition">${live.title}</h3>
-                                <p class="text-sm opacity-60">${live.venue}</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-4 w-full md:w-auto justify-end">
-                            <span class="border border-pink-500 text-pink-500 px-8 py-3 rounded-full font-bold w-full md:w-auto text-center group-hover:bg-pink-500 group-hover:text-white transition">Live詳細</span>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function renderMemberGrid() {
-            const grid = document.getElementById('member-grid');
-            grid.innerHTML = Object.entries(memberData).map(([memberId, member]) => {
-                const theme = getMemberTheme(memberId);
-                const imagePosition = member.imagePosition || (memberId === 'rei' ? 'right center' : 'center center');
-                const imageScale = member.imageScale || 1;
-                return `
-                <button onclick="openMemberDetail('${memberId}')" style="border-color: ${theme.color}; box-shadow: 0 0 24px ${theme.colorSoft};" class="group relative overflow-hidden rounded-3xl aspect-[3/4] hover-scale text-left border">
-                    <img src="${member.image}" style="object-position: ${imagePosition}; transform: scale(${imageScale});" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition duration-500" alt="${member.name}">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80"></div>
-                    <div class="absolute inset-x-0 bottom-0 h-24 opacity-60" style="background: linear-gradient(0deg, ${theme.colorSoft}, transparent);"></div>
-                    <div class="absolute bottom-6 left-6">
-                        <h3 class="text-2xl font-black italic" style="text-shadow: 0 0 18px ${theme.colorSoft};">${member.name}</h3>
-                        <p class="font-bold text-sm tracking-widest uppercase" style="color: ${theme.color};">${member.role}</p>
-                    </div>
-                </button>
-            `;
-            }).join('');
-        }
-
-        function openLiveDetail(liveId) {
-            const live = liveData[liveId];
-            if (!live || live.visible === false) return;
-            document.getElementById('live-detail-date').innerText = live.date;
-            document.getElementById('live-detail-title').innerText = live.title;
-            document.getElementById('live-detail-venue').innerText = live.venue;
-            document.getElementById('live-detail-time').innerText = live.time;
-            document.getElementById('live-detail-charge').innerText = live.charge;
-            document.getElementById('live-detail-info').innerText = live.info;
-            const flyerWrap = document.getElementById('live-detail-flyer-wrap');
-            const flyerImage = document.getElementById('live-detail-flyer');
-            if (live.flyer) {
-                flyerImage.src = live.flyer;
-                flyerWrap.classList.remove('hidden');
-            } else {
-                flyerImage.src = '';
-                flyerWrap.classList.add('hidden');
-            }
-
-            document.getElementById('live-detail-modal').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeLiveDetail() {
-            document.getElementById('live-detail-modal').classList.add('hidden');
-            document.body.style.overflow = 'auto';
-        }
 
         let albums = {
           "jmatsuri20250927": {
