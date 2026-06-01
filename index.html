@@ -716,7 +716,14 @@
             if (savedVersion !== ADMIN_DATA_VERSION) {
                 applyMemberDefaults();
                 applyLiveDefaults();
-                saveAdminData();
+                localStorage.removeItem('ppdMemberData');
+                localStorage.removeItem('ppdLiveData');
+                localStorage.removeItem('ppdAlbums');
+                try {
+                    localStorage.setItem('ppdAdminDataVersion', ADMIN_DATA_VERSION);
+                } catch (error) {
+                    console.warn('Admin data version could not be saved.', error);
+                }
                 return;
             }
 
@@ -733,7 +740,9 @@
                 console.warn('Saved admin data could not be loaded. Restoring bundled data.', error);
                 applyMemberDefaults();
                 applyLiveDefaults();
-                saveAdminData();
+                localStorage.removeItem('ppdMemberData');
+                localStorage.removeItem('ppdLiveData');
+                localStorage.removeItem('ppdAlbums');
             }
         }
 
