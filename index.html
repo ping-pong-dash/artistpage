@@ -847,6 +847,10 @@
             }).join('');
         }
 
+        function getProfileItemImage(item = {}) {
+            return item.image || item.src || item.photo || item.url || '';
+        }
+
         function openMemberDetail(memberId) {
             const member = memberData[memberId];
             if (!member) return;
@@ -869,16 +873,19 @@
 
             const activities = Array.isArray(member.activities) ? member.activities : [];
             document.getElementById('member-detail-activities').innerHTML = activities.length ? activities.map(activity => `
-                <div class="bg-white/5 border border-white/10 rounded-2xl p-4">
-                    <h4 class="font-black text-lg mb-2" style="color: ${theme.color};">${escapeAdminField(activity.band || '')}</h4>
-                    <p class="opacity-75 leading-relaxed">${escapeAdminField(activity.detail || '')}</p>
+                <div class="bg-white/5 border border-white/10 rounded-2xl overflow-hidden sm:grid sm:grid-cols-[10rem_1fr]">
+                    ${getProfileItemImage(activity) ? `<div class="aspect-[4/3] sm:aspect-auto bg-black/40 flex items-center justify-center"><img src="${escapeAdminField(getProfileItemImage(activity))}" class="w-full h-full object-contain" alt="${escapeAdminField(activity.band || 'Activity')}"></div>` : ''}
+                    <div class="p-4">
+                        <h4 class="font-black text-lg mb-2" style="color: ${theme.color};">${escapeAdminField(activity.band || '')}</h4>
+                        <p class="opacity-75 leading-relaxed">${escapeAdminField(activity.detail || '')}</p>
+                    </div>
                 </div>
             `).join('') : '<p class="opacity-50">No activity data yet.</p>';
 
             const equipment = Array.isArray(member.equipment) ? member.equipment : [];
             document.getElementById('member-detail-equipment').innerHTML = equipment.length ? equipment.map(item => `
                 <div class="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
-                    ${item.image ? `<div class="aspect-[4/3] bg-black/40 flex items-center justify-center"><img src="${escapeAdminField(item.image)}" class="w-full h-full object-contain" alt="${escapeAdminField(item.name || 'Equipment')}"></div>` : ''}
+                    ${getProfileItemImage(item) ? `<div class="aspect-[4/3] bg-black/40 flex items-center justify-center"><img src="${escapeAdminField(getProfileItemImage(item))}" class="w-full h-full object-contain" alt="${escapeAdminField(item.name || 'Equipment')}"></div>` : ''}
                     <div class="p-4">
                         <h4 class="font-black text-lg mb-2" style="color: ${theme.color};">${escapeAdminField(item.name || '')}</h4>
                         <p class="opacity-75 leading-relaxed">${escapeAdminField(item.detail || '')}</p>
