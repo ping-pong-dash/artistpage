@@ -1,0 +1,8 @@
+dist/
+.netlify/
+.local-data/
+.env
+.env.*
+!.env.example
+node_modules/
+test-results/
